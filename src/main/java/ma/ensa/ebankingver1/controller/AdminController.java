@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +25,8 @@ public class AdminController {
 
     @Autowired
     private SettingService globalSettingService;
+    @Autowired
+    private SettingService settingService;
 
     // Gestion des devises
     //get currencies
@@ -45,6 +49,7 @@ public class AdminController {
     }
 
     // MARCHE ET RETOURNE JSON
+    //n est pas encore ajouté dans angular
     @PutMapping("/currencies/{id}/exchange-rate")
     @PreAuthorize("hasRole('ADMIN')")
     public Currency updateExchangeRate(@PathVariable("id") Long id, @Valid @RequestBody ExchangeRateUpdateRequest request) {
@@ -76,6 +81,17 @@ public Map<String, String> getSettingValue(@PathVariable(name = "key") String ke
     return Map.of("value", globalSettingService.getSettingValue(key));
 }
 
+//endpoint pour dashbord
+@GetMapping("/dashboard")
+public Map<String, Object> getDashboardStats() {
+    Map<String, Object> stats = new HashMap<>();
+    stats.put("totalCurrencies", currencyService.getAllCurrencies().size());
+    stats.put("totalSettings", settingService.getAllSettings().size());
+    stats.put("lastUpdate", LocalDate.now().toString());
+    return stats;
+}
+
+
 
 
     /*
@@ -93,5 +109,6 @@ public Map<String, String> getSettingValue(@PathVariable(name = "key") String ke
 public GlobalSetting updateSetting(@PathVariable (name = "key") String key, @RequestBody SettingUpdateRequest request) {
     return globalSettingService.updateSetting(key, request.getValue());
 }
+//delete setting doesn't make sense donc je l ai pas fait
 
 }
