@@ -30,6 +30,7 @@ public class DataConfig {
     private final String PROPERTY_PASSWORD = "password";
     private final String PROPERTY_SHOW_SQL = "hibernate.show_sql";
     private final String PROPRETY_HBM2DDL = "hibernate.hbm2ddl.auto";
+    private final String PROPERTY_DIALECT = "hibernate.dialect";
 
     @Autowired
     Environment environment;
@@ -77,6 +78,8 @@ public class DataConfig {
         properties.setProperty(PROPERTY_SHOW_SQL, environment.getProperty(PROPERTY_SHOW_SQL));
         properties.setProperty(PROPERTY_SHOW_SQL, environment.getProperty(PROPERTY_SHOW_SQL));
         properties.setProperty(PROPRETY_HBM2DDL, environment.getProperty(PROPRETY_HBM2DDL));
+        properties.setProperty(PROPERTY_DIALECT, environment.getProperty(PROPERTY_DIALECT));
+
 
         return properties;
     }

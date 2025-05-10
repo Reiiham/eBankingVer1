@@ -18,6 +18,8 @@ public class Currency {
 
     @Column(name = "exchange_rate", nullable = false)
     private double exchangeRate;
+    @Column(name = "isDefault", nullable = false)
+    private boolean isDefault;
 
     // Getters et setters
     public Long getId() {
@@ -51,4 +53,23 @@ public class Currency {
     public void setExchangeRate(double exchangeRate) {
         this.exchangeRate = exchangeRate;
     }
+    public boolean getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
+    @Override
+    public String toString() {
+        return "Currency{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", codeISO='" + codeISO + '\'' +
+                ", exchangeRate=" + exchangeRate +
+                ", isDefault=" + isDefault +
+                '}';
+    }
+
 }
