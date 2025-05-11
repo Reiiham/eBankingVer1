@@ -8,10 +8,13 @@ import ma.ensa.ebankingver1.model.GlobalSetting;
 import ma.ensa.ebankingver1.service.CurrencyService;
 import ma.ensa.ebankingver1.service.SettingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,95 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
+
+    @Autowired
+    private CurrencyService currencyService;
+
+    @Autowired
+    private SettingService settingService; // Injection de SettingService
+
+    @GetMapping("/currencies")
+    public ResponseEntity<List<Currency>> getCurrencies() {
+        List<Currency> currencies = currencyService.getAllCurrencies();
+        return ResponseEntity.ok(currencies);
+    }
+    /*
+        @PostMapping("/currencies")
+        public ResponseEntity<Currency> addCurrency(@Valid @RequestBody Currency currency) {
+            try {
+                // Vérifier les données avant de sauvegarder
+                if (currency.getName() == null || currency.getName().trim().isEmpty() ||
+                        currency.getCodeISO() == null || currency.getCodeISO().trim().isEmpty() ||
+                        currency.getExchangeRate() <= 0) {
+                    return ResponseEntity.badRequest().body(null); // 400 si données invalides
+                }
+                Currency savedCurrency = currencyService.addCurrency(currency);
+                return ResponseEntity.status(HttpStatus.CREATED).body(savedCurrency);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(null); // 409 pour doublon
+            } catch (Exception e) {
+                // Capturer toute autre exception pour débogage
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // 500 avec log
+            }
+        }
+
+     */
+    @PostMapping("/currencies")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Currency> addCurrency(@RequestBody Currency currency) {
+        try {
+            Currency savedCurrency = currencyService.addCurrency(currency);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedCurrency); // Retourne 201 si succès
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null); // Retourne 409 en cas de conflit
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Retourne 500 en cas d'erreur
+        }
+    }
+    @PutMapping("/currencies/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Currency> updateCurrency(@PathVariable("id") Long id, @RequestBody Currency currency) {
+        try {
+            Currency updatedCurrency = currencyService.updateCurrency(id, currency);
+            return ResponseEntity.ok(updatedCurrency); // Retourne 200 si succès
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Retourne 404 si la devise n'existe pas
+        }
+    }
+
+
+    @PutMapping("/currencies/{id}/exchange-rate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Currency> updateExchangeRate(@PathVariable("id") Long id, @Valid @RequestBody ExchangeRateUpdateRequest request) {
+        try {
+            Currency updatedCurrency = currencyService.updateExchangeRate(id, request.getExchangeRate());
+            return ResponseEntity.ok(updatedCurrency); // Retourne 200 si succès
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Retourne 404 si la devise n'existe pas
+        }
+    }
+
+    @DeleteMapping("/currencies/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteCurrency(@PathVariable("id") Long id) {
+        try {
+            currencyService.deleteCurrency(id);
+            return ResponseEntity.noContent().build(); // Retourne 204 si succès
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Retourne 404 si la devise n'existe pas
+        }
+    }
+
+    @GetMapping("/dashboard")
+    public Map<String, Object> getDashboardStats() {
+        return Map.of(
+                "totalCurrencies", currencyService.getAllCurrencies().size(),
+                "totalSettings", settingService.getAllSettings().size(),
+                "lastUpdate", LocalDateTime.now().toString()
+        );
+    }
+    /*
 
     @Autowired
     private CurrencyService currencyService;
@@ -35,16 +127,18 @@ public class AdminController {
     public List<Currency> getCurrencies() {
         return currencyService.getAllCurrencies();
     }
+
     //MARCHE
     @PostMapping("/currencies")
     //@PreAuthorize("hasRole('ADMIN')")
     public Currency addCurrency(@RequestBody Currency currency) {
         return currencyService.saveCurrency(currency);
     }
-//MARCHE
+
+    //MARCHE
     @PutMapping("/currencies/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public Currency updateCurrency(@PathVariable ("id") Long id, @RequestBody Currency currency) {
+    public Currency updateCurrency(@PathVariable("id") Long id, @RequestBody Currency currency) {
         return currencyService.updateCurrency(id, currency);
     }
 
@@ -101,14 +195,14 @@ public Map<String, Object> getDashboardStats() {
         return globalSettingService.updateSetting(key, value);
     }
 
- */
+
     //pour utiliser que json
     // MARCHE ET RETOURNE JSON
     @PutMapping("/settings/{key}")
-@PreAuthorize("hasRole('ADMIN')")
-public GlobalSetting updateSetting(@PathVariable (name = "key") String key, @RequestBody SettingUpdateRequest request) {
-    return globalSettingService.updateSetting(key, request.getValue());
+    @PreAuthorize("hasRole('ADMIN')")
+    public GlobalSetting updateSetting(@PathVariable (name = "key") String key, @RequestBody SettingUpdateRequest request) {
+          return globalSettingService.updateSetting(key, request.getValue());
 }
-//delete setting doesn't make sense donc je l ai pas fait
+*/
 
 }

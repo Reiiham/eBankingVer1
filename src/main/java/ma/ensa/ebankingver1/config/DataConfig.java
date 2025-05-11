@@ -76,7 +76,6 @@ public class DataConfig {
     Properties hibernateProps() {
         Properties properties = new Properties();
         properties.setProperty(PROPERTY_SHOW_SQL, environment.getProperty(PROPERTY_SHOW_SQL));
-        properties.setProperty(PROPERTY_SHOW_SQL, environment.getProperty(PROPERTY_SHOW_SQL));
         properties.setProperty(PROPRETY_HBM2DDL, environment.getProperty(PROPRETY_HBM2DDL));
         properties.setProperty(PROPERTY_DIALECT, environment.getProperty(PROPERTY_DIALECT));
 
