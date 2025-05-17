@@ -9,7 +9,7 @@ import org.springframework.context.support.*;
 
 @EnableWebMvc
 @Configuration
-@ComponentScan({"ma.ensa.ebankingver1.controller", "ma.ensa.ebankingver1"})
+@ComponentScan({"ma.ensa.ebankingver1.config","ma.ensa.ebankingver1.service","ma.ensa.ebankingver1.filter","ma.ensa.ebankingver1.controller", "ma.ensa.ebankingver1"})
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
@@ -43,6 +43,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*");
     }
+
+
 
 }
 

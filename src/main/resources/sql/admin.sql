@@ -1,1 +1,2 @@
-INSERT INTO users (birth_date, tel, email, first_name, last_name, role) VALUES ('2004-05-22', '0123456789', 'admin@ebanking.com', 'Siham', 'siham', 'ADMIN');
+INSERT INTO users (first_name, last_name, email, tel, birth_date, role, password)
+VALUES ('Siham', 'siham', 'admin@ebanking.com', '0123456789', '2004-05-22', 'ADMIN', 'siham');

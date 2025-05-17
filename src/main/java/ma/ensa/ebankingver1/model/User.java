@@ -28,6 +28,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "token")
+    private String token;
+
+    @Column(name = "must_change_password")
+    private Boolean mustChangePassword;
 
     public User() {
     }
@@ -85,12 +93,43 @@ public class User {
     public void setRole(Role role){
         this.role = role;
     }
+    public String getPassword() {
+        return password;
+    }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public Boolean getMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
 
     @Override
     public String toString() {
-        return "Person{" + "id=" + id + ", firstName='" + firstName + '\'' + ", lastName='" + lastName + '\'' + ", email='" + email + '\'' + ", Tel='" + Tel + '\'' + ", Birth_Date=" + Birth_Date + ", role=" + role +
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", Tel='" + Tel + '\'' +
+                ", Birth_Date=" + Birth_Date +
+                ", role=" + role +
+                ", password='" + password + '\'' +
+                ", token='" + token + '\'' +
+                ", mustChangePassword=" + mustChangePassword +
                 '}';
     }
-
 }

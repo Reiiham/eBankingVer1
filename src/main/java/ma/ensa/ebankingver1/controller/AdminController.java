@@ -1,11 +1,14 @@
 package ma.ensa.ebankingver1.controller;
 
 import jakarta.validation.Valid;
+import ma.ensa.ebankingver1.DTO.EmployeeDTO;
 import ma.ensa.ebankingver1.DTO.ExchangeRateUpdateRequest;
 import ma.ensa.ebankingver1.DTO.SettingUpdateRequest;
 import ma.ensa.ebankingver1.model.Currency;
 import ma.ensa.ebankingver1.model.GlobalSetting;
+import ma.ensa.ebankingver1.model.User;
 import ma.ensa.ebankingver1.service.CurrencyService;
+import ma.ensa.ebankingver1.service.EmployeeService;
 import ma.ensa.ebankingver1.service.SettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,34 +31,16 @@ public class AdminController {
 
     @Autowired
     private SettingService settingService; // Injection de SettingService
+    @Autowired
+    private EmployeeService employeeService;
+
 
     @GetMapping("/currencies")
     public ResponseEntity<List<Currency>> getCurrencies() {
         List<Currency> currencies = currencyService.getAllCurrencies();
         return ResponseEntity.ok(currencies);
     }
-    /*
-        @PostMapping("/currencies")
-        public ResponseEntity<Currency> addCurrency(@Valid @RequestBody Currency currency) {
-            try {
-                // Vérifier les données avant de sauvegarder
-                if (currency.getName() == null || currency.getName().trim().isEmpty() ||
-                        currency.getCodeISO() == null || currency.getCodeISO().trim().isEmpty() ||
-                        currency.getExchangeRate() <= 0) {
-                    return ResponseEntity.badRequest().body(null); // 400 si données invalides
-                }
-                Currency savedCurrency = currencyService.addCurrency(currency);
-                return ResponseEntity.status(HttpStatus.CREATED).body(savedCurrency);
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(null); // 409 pour doublon
-            } catch (Exception e) {
-                // Capturer toute autre exception pour débogage
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // 500 avec log
-            }
-        }
 
-     */
     @PostMapping("/currencies")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Currency> addCurrency(@RequestBody Currency currency) {
@@ -109,6 +94,16 @@ public class AdminController {
                 "totalSettings", settingService.getAllSettings().size(),
                 "lastUpdate", LocalDateTime.now().toString()
         );
+    }
+    @PostMapping("/employees")
+    //@PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<User> createEmployee(@Valid @RequestBody EmployeeDTO employeeDTO) {
+        try {
+            User employee = employeeService.createEmployee(employeeDTO);
+            return new ResponseEntity<>(employee, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     /*
 

@@ -8,8 +8,9 @@ public class AppInitializer
     // services and data sources
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{DataConfig.class};
+        return new Class[]{DataConfig.class, SecurityConfig.class};
     }
+
 
     // controller, view resolver, handler mapping
     @Override
