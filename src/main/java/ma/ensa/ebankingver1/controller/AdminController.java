@@ -96,15 +96,18 @@ public class AdminController {
         );
     }
     @PostMapping("/employees")
-    //@PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<User> createEmployee(@Valid @RequestBody EmployeeDTO employeeDTO) {
+    public ResponseEntity<?> createEmployee(@Valid @RequestBody EmployeeDTO employeeDTO) {
         try {
             User employee = employeeService.createEmployee(employeeDTO);
             return new ResponseEntity<>(employee, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne");
         }
     }
+
     /*
 
     @Autowired
