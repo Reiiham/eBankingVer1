@@ -1,8 +1,10 @@
 package ma.ensa.ebankingver1.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -36,6 +38,11 @@ public class User {
 
     @Column(name = "must_change_password")
     private Boolean mustChangePassword;
+
+    @OneToMany(mappedBy = "client")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<BankAccount> bankAccounts;
+
 
     public User() {
     }
@@ -115,6 +122,12 @@ public class User {
 
     public void setMustChangePassword(Boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
+    }
+    public List<BankAccount> getBankAccounts() {
+        return bankAccounts;
+    }
+    public void setBankAccounts(List<BankAccount> bankAccounts) {
+        this.bankAccounts = bankAccounts;
     }
 
     @Override

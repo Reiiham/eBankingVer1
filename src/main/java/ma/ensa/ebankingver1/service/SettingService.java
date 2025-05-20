@@ -2,6 +2,8 @@ package ma.ensa.ebankingver1.service;
 
 import ma.ensa.ebankingver1.model.GlobalSetting;
 import ma.ensa.ebankingver1.repository.SettingRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +12,7 @@ import java.util.Optional;
 
 @Service
 public class SettingService {
+    private static final Logger logger = LoggerFactory.getLogger(SettingService.class);
 
     @Autowired
     private SettingRepository globalSettingRepository;
@@ -54,5 +57,11 @@ public class SettingService {
             throw new IllegalArgumentException("Setting not found");
         }
         globalSettingRepository.deleteById(id);
+    }
+    public GlobalSetting updateSettingByKey(String key, String value) {
+        GlobalSetting setting = globalSettingRepository.findByKey(key)
+                .orElseThrow(() -> new IllegalArgumentException("Setting with key " + key + " not found"));
+        setting.setValue(value);
+        return globalSettingRepository.save(setting);
     }
 }

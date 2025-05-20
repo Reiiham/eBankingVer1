@@ -6,9 +6,11 @@ import ma.ensa.ebankingver1.service.SettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/settings")
@@ -22,9 +24,11 @@ public class SettingsController {
     }
 
     @GetMapping
-    public List<GlobalSetting> getAllSettings() {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<GlobalSetting>> getAllSettings() {
         System.out.println("Received GET request for /api/admin/settings");
-        return settingService.getAllSettings();
+        List<GlobalSetting> settings = settingService.getAllSettings();
+        return ResponseEntity.ok(settings);
     }
 
     @PostMapping
@@ -68,6 +72,32 @@ public class SettingsController {
             System.err.println("Error deleting setting: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @GetMapping("/by-key/{key}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> getSettingValue(@PathVariable("key") String key) {
+        try {
+            String value = settingService.getSettingValue(key);
+            return ResponseEntity.ok(Map.of("value", value));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Setting not found"));
+        }
+    }
+
+    @PutMapping("/by-key/{key}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GlobalSetting> updateSettingByKey(@PathVariable("key") String key, @Valid @RequestBody GlobalSetting setting) {
+        try {
+            System.out.println("Received PUT request for /api/admin/settings/by-key/" + key);
+            GlobalSetting updatedSetting = settingService.updateSettingByKey(key, setting.getValue());
+            return ResponseEntity.ok(updatedSetting);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Setting not found for key: " + key);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            System.err.println("Error updating setting by key: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }
