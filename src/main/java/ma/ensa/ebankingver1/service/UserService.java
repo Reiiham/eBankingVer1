@@ -16,13 +16,40 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
     }
+/*
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
     }
+
     public Role getUserRoleByEmail(String email) {
         return userRepository.getUserRoleByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Rôle non trouvé"))
                 .getRole();
     }
+
+    public Long getUserIdByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return user.getId();
+    }
+
+ */
+
+    public Long getUserIdByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return user.getId();
+    }
+    public Role getUserRoleByUsername(String username) {
+        return userRepository.getUserRoleByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Rôle non trouvé"))
+                .getRole();
+    }
+    public String getUserPhoneByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return user.getTel();
+    }
+
 }

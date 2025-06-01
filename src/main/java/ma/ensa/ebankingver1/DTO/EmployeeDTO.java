@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 
 public class EmployeeDTO {
 
+    @NotBlank(message = "L'email est obligatoire")
+    private String emailPersonnel;
+
     @NotBlank(message = "Le prénom est obligatoire")
     private String firstName;
 
@@ -17,10 +20,20 @@ public class EmployeeDTO {
     @NotBlank(message = "Le CIN est obligatoire")
     private String cin;
 
-    @NotBlank(message = "La ville est obligatoire")
-    private String city;
 
-    private String cinPhoto;
+    //private String cinPhotoFilename;
+    // Constructeurs
+    public EmployeeDTO() {}
+
+    public EmployeeDTO(String firstName, String lastName, String phoneNumber,
+                       String cin, String emailPersonnel, String cinPhoto) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.cin = cin;
+        this.emailPersonnel = emailPersonnel;
+        //this.cinPhotoFilename = cinPhoto;
+    }
 
     private Role role;
 
@@ -56,21 +69,14 @@ public class EmployeeDTO {
         this.cin = cin;
     }
 
-    public String getCity() {
-        return city;
+/*blic String getCinPhotoFilename() {
+        return cinPhotoFilename;
+    }
+    public void setCinPhotoFilename(String cinPhotoFilename) {
+        this.cinPhotoFilename = cinPhotoFilename;
     }
 
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCinPhoto() {
-        return cinPhoto;
-    }
-
-    public void setCinPhoto(String cinPhoto) {
-        this.cinPhoto = cinPhoto;
-    }
+ */
 
     public Role getRole() {
         return role;
@@ -78,5 +84,11 @@ public class EmployeeDTO {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    public String getEmailPersonnel() {
+        return emailPersonnel;
+    }
+    public void setEmailPersonnel(String emailPersonnel) {
+        this.emailPersonnel = emailPersonnel;
     }
 }

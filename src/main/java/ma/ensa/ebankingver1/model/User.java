@@ -12,6 +12,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "username", unique = true, nullable = false)
+    private String username;
+
 
     @Column(name = "first_name")
     private String firstName;
@@ -38,6 +41,26 @@ public class User {
 
     @Column(name = "must_change_password")
     private Boolean mustChangePassword;
+    @Column(unique = true, nullable = false)
+    private String cin;
+
+    // Stocker seulement le nom du fichier (pas le chemin complet)
+    //@Column(name = "cin_photo_filename")
+    //private String cinPhotoFilename;
+
+    // Getters et Setters
+    public String getCin() { return cin; }
+    public void setCin(String cin) { this.cin = cin; }
+
+    //public String getCinPhotoFilename() { return cinPhotoFilename; }
+    //public void setCinPhotoFilename(String cinPhotoFilename) { this.cinPhotoFilename = cinPhotoFilename; }
+
+    // Méthode helper pour obtenir l'URL de l'image
+    //public String getCinPhotoUrl() {
+    //  if (cinPhotoFilename != null) {
+    //    return "/api/employees/cin-photo/" + cinPhotoFilename;}
+    //return null;}
+
 
     @OneToMany(mappedBy = "client")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -130,10 +153,20 @@ public class User {
         this.bankAccounts = bankAccounts;
     }
 
+    public String getUsername() {
+        return username;
+    }
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
+                ", username='" + username + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
@@ -143,6 +176,7 @@ public class User {
                 ", password='" + password + '\'' +
                 ", token='" + token + '\'' +
                 ", mustChangePassword=" + mustChangePassword +
+                ", cin='" + cin + '\'' +
                 '}';
     }
 }

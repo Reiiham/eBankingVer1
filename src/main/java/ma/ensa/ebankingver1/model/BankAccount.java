@@ -8,7 +8,7 @@ import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "TYPE" , length = 4)
+@DiscriminatorColumn(name = "TYPE" , length = 10)
 public class BankAccount {
     @Id
     private String id;

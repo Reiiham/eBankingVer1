@@ -6,32 +6,25 @@ import ma.ensa.ebankingver1.model.BankAccount;
 import java.util.List;
 
 public interface BankAccountService {
+    ClientDTO saveClient(ClientDTO clientDTO);
 
-    //Logger log = LoggerFactory.getLogger(this.getClass().getName());
-    ClientDTO saveClient(ClientDTO ClientDTO);
-
-    CurrentBankAccountDTO saveCurrentBankAccount(double InitialBalance, Long ClientId, double overDraft);
-    SavingBankAccountDTO saveSavingBankAccount(double InitialBalance, Long ClientId, double interestRate);
+    CurrentBankAccountDTO saveCurrentBankAccount(double initialBalance, Long clientId, double overDraft);
+    SavingBankAccountDTO saveSavingBankAccount(double initialBalance, Long clientId, double interestRate);
     List<ClientDTO> listClients();
     BankAccountDTO getBankAccount(String accountId);
-    void debit(String accountId,double amount,String description);
-    void credit(String accountId,double amount,String description);
-    void transfert(String accountIdSource,String accountIdDestination,double amount);
+    void debit(String accountId, double amount, String description);
+    void credit(String accountId, double amount, String description);
+    void transfer(String accountIdSource, String accountIdDestination, double amount); // Fixed typo
     List<BankAccountDTO> bankAccountsList();
-    public ClientDTO getClient(Long ClientId) throws Exception;
-
-
-    ClientDTO updateClient(ClientDTO ClientDTO);
-
-    void deleteClient(Long ClientId);
-
-    List<AccountOperationDTO> AccountHistory(String accountId);
-
+    ClientDTO getClient(Long clientId) throws Exception;
+    ClientDTO updateClient(ClientDTO clientDTO);
+    void deleteClient(Long clientId);
+    List<AccountOperationDTO> accountHistory(String accountId); // Fixed method name
     AccountHistoryDTO getAccountHistory(String accountId, int page, int size);
-
     List<ClientDTO> searchClients(String keyword);
-
-    List<BankAccount> getaccountsClient(Long ClientId);
+    List<BankAccount> getaccountsClient(Long clientId);
     List<BankAccountDTO> getAccountsByClientId(Long clientId);
+    List<BeneficiaryDTO> getBeneficiaries(String clientId); // Added
+    BeneficiaryDTO addBeneficiary(String clientId, BeneficiaryDTO beneficiaryDTO);
+    public List<BankAccountDTO> getAllBankAccounts();// Added
 }
-

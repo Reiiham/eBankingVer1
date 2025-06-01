@@ -1,18 +1,16 @@
 package ma.ensa.ebankingver1.util;
 
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.JwtException;
 import ma.ensa.ebankingver1.model.Role;
 import ma.ensa.ebankingver1.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-
-import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 
@@ -24,11 +22,11 @@ public class JwtUtil {
     @Autowired
     private UserService userService;
 
-    public String generateToken(String email) {
-        Role role = userService.getUserRoleByEmail(email);
+    public String generateToken(String username) {
+        Role role = userService.getUserRoleByUsername(username);
 
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(username)
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1h

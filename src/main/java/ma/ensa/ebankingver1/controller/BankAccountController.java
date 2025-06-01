@@ -5,9 +5,26 @@ import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.model.BankAccount;
 import ma.ensa.ebankingver1.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+@RestController
+@RequestMapping("/api/bankAccounts")
+public class BankAccountController {
+
+    private final BankAccountService bankAccountService;
+
+    public BankAccountController(BankAccountService bankAccountService) {
+        this.bankAccountService = bankAccountService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<BankAccountDTO>> getAllBankAccounts() {
+        List<BankAccountDTO> accounts = bankAccountService.getAllBankAccounts();
+        return ResponseEntity.ok(accounts);
+    }
+}
 /*
 @RestController
 @RequestMapping("/api/client")
