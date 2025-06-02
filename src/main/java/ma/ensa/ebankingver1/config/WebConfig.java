@@ -17,9 +17,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        //Configure comment servir les ressources statiques comme CSS, JS, images
-        //registry.addResourceHandler("/resources/**").addResourceLocations("/assets/");
-        //registry.addResourceHandler("/webjars/**").addResourceLocations("/webjars/");
         registry.addResourceHandler("/**").addResourceLocations("/angular/");
 
     }

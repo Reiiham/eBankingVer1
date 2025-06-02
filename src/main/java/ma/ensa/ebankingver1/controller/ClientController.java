@@ -3,7 +3,14 @@ package ma.ensa.ebankingver1.controller;
 
 import jakarta.persistence.EntityNotFoundException;
 import ma.ensa.ebankingver1.DTO.*;
+import ma.ensa.ebankingver1.ai.AIAssistantService;
+import ma.ensa.ebankingver1.ai.AIResponse;
+import ma.ensa.ebankingver1.ai.WitAIClient;
+import ma.ensa.ebankingver1.service.AuditService;
 import ma.ensa.ebankingver1.service.BankAccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +24,21 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping("/api/clients")
 public class ClientController {
-
+    private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
     private final BankAccountService bankAccountService;
+    private final AIAssistantService aiAssistantService;
+    private final AuditService auditService;
+    private final WitAIClient witAIClient;
 
-    public ClientController(BankAccountService bankAccountService) {
+    @Autowired
+    public ClientController(BankAccountService bankAccountService, AIAssistantService aiAssistantService,
+                            AuditService auditService, WitAIClient witAIClient) {
         this.bankAccountService = bankAccountService;
+        this.aiAssistantService = aiAssistantService;
+        this.auditService = auditService;
+        this.witAIClient = witAIClient;
     }
+
 
     @GetMapping("/{clientId}/accounts")
     public ResponseEntity<List<BankAccountDTO>> getClientAccounts(@PathVariable("clientId") String clientId) {
@@ -96,6 +112,23 @@ public class ClientController {
                     .body(new ApiResponse<>(false, null, "Failed to fetch transactions: " + e.getMessage()));
         }
     }
+    @PostMapping(value = "/{clientId}/assistant", produces = "application/json")
+    public ResponseEntity<AIResponse> interactWithAssistant(
+            @PathVariable String clientId,
+            @RequestBody String request,
+            @RequestParam(defaultValue = "fr") String language) {
+        try {
+            logger.info("Processing AI request for clientId: {}, request: {}, language: {}", clientId, request, language);
+            AIResponse response = aiAssistantService.processClientRequest(clientId, request, language);
+            auditService.logAction("AI_REQUEST", "ASSISTANT", clientId,
+                    Map.of("request", request, "intent", response.getResponseText().contains("recharge") ? "recharge_phone" : response.getResponseText().contains("solde") ? "check_balance" : "unknown"),
+                    response.isSuccess());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error in assistant endpoint for clientId: {}, request: {}. Exception: {}", clientId, request, e.getMessage(), e);
+            return ResponseEntity.status(500).body(new AIResponse("Erreur serveur : " + e.getMessage(), false));
+        }
+    }
 
     private Long parseClientId(String clientId) {
         try {
@@ -107,14 +140,32 @@ public class ClientController {
 
     @PostMapping("/{clientId}/accounts/{accountId}/debit")
     public ResponseEntity<DebitDTO> debitAccount(@PathVariable("clientId") String clientId, @PathVariable("accountId") String accountId, @RequestBody DebitDTO debitDTO) {
-        bankAccountService.debit(accountId, debitDTO.getAmount(), debitDTO.getDescription());
-        return ResponseEntity.ok(debitDTO);
+        try {
+            bankAccountService.debit(accountId, debitDTO.getAmount(), debitDTO.getDescription());
+            auditService.logAction("DEBIT_SUCCESS", "BANK_ACCOUNT", accountId,
+                    Map.of("amount", debitDTO.getAmount(), "description", debitDTO.getDescription()), true);
+            return ResponseEntity.ok(debitDTO);
+        } catch (Exception e) {
+            auditService.logAction("DEBIT_FAILED", "BANK_ACCOUNT", accountId,
+                    Map.of("error", e.getMessage(), "amount", debitDTO.getAmount(), "description", debitDTO.getDescription()), false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 
     @PostMapping("/{clientId}/accounts/{accountId}/credit")
     public ResponseEntity<CreditDTO> creditAccount(@PathVariable("clientId") String clientId, @PathVariable("accountId") String accountId, @RequestBody CreditDTO creditDTO) {
-        bankAccountService.credit(accountId, creditDTO.getAmount(), creditDTO.getDescription());
-        return ResponseEntity.ok(creditDTO);
+        try {
+            bankAccountService.credit(accountId, creditDTO.getAmount(), creditDTO.getDescription());
+            auditService.logAction("CREDIT_SUCCESS", "BANK_ACCOUNT", accountId,
+                    Map.of("amount", creditDTO.getAmount(), "description", creditDTO.getDescription()), true);
+            return ResponseEntity.ok(creditDTO);
+        } catch (Exception e) {
+            auditService.logAction("CREDIT_FAILED", "BANK_ACCOUNT", accountId,
+                    Map.of("error", e.getMessage(), "amount", creditDTO.getAmount(), "description", creditDTO.getDescription()), false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 
     @PostMapping("/{clientId}/accounts/transfer")
@@ -122,21 +173,33 @@ public class ClientController {
         try {
             Long id = parseClientId(clientId);
             if (transferRequestDTO.getAmount() <= 0) {
+                auditService.logAction("TRANSFER_REQUEST_FAILED", "BANK_ACCOUNT", transferRequestDTO.getAccountSource(),
+                        Map.of("error", "Transfer amount must be positive", "destination", transferRequestDTO.getAccountDestination()), false);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ApiResponse<>(false, null, "Error: Transfer amount must be positive"));
             }
             bankAccountService.transfer(transferRequestDTO.getAccountSource(), transferRequestDTO.getAccountDestination(), transferRequestDTO.getAmount());
+            auditService.logAction("TRANSFER_REQUEST", "BANK_ACCOUNT", transferRequestDTO.getAccountSource(),
+                    Map.of("amount", transferRequestDTO.getAmount(), "destination", transferRequestDTO.getAccountDestination()), true);
             return ResponseEntity.ok(new ApiResponse<>(true, "Transfert effectué avec succès.", null));
         } catch (EntityNotFoundException e) {
+            auditService.logAction("TRANSFER_REQUEST_FAILED", "BANK_ACCOUNT", transferRequestDTO.getAccountSource(),
+                    Map.of("error", e.getMessage(), "destination", transferRequestDTO.getAccountDestination()), false);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, null, "Error: " + e.getMessage()));
         } catch (IllegalArgumentException e) {
+            auditService.logAction("TRANSFER_REQUEST_FAILED", "BANK_ACCOUNT", transferRequestDTO.getAccountSource(),
+                    Map.of("error", e.getMessage(), "destination", transferRequestDTO.getAccountDestination()), false);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(false, null, "Error: " + e.getMessage()));
         } catch (IllegalStateException e) {
+            auditService.logAction("TRANSFER_REQUEST_FAILED", "BANK_ACCOUNT", transferRequestDTO.getAccountSource(),
+                    Map.of("error", e.getMessage(), "destination", transferRequestDTO.getAccountDestination()), false);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(false, null, "Error: " + e.getMessage()));
         } catch (Exception e) {
+            auditService.logAction("TRANSFER_REQUEST_FAILED", "BANK_ACCOUNT", transferRequestDTO.getAccountSource(),
+                    Map.of("error", e.getMessage(), "destination", transferRequestDTO.getAccountDestination()), false);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, null, "Error: An unexpected error occurred during the transfer: " + e.getMessage()));
         }
@@ -164,6 +227,13 @@ public class ClientController {
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
+    }
+    @GetMapping("/assistant/health")
+    public ResponseEntity<Map<String, Boolean>> checkAssistantHealth() {
+        boolean isModelAvailable = witAIClient.testModelAvailability();
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("modelAvailable", isModelAvailable);
+        return ResponseEntity.ok(response);
     }
 }
 /*

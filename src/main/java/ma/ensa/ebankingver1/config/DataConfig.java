@@ -51,28 +51,9 @@ public class DataConfig {
         ds.setUsername(environment.getProperty(PROPERTY_USERNAME));
         ds.setPassword(environment.getProperty(PROPERTY_PASSWORD));
         ds.setDriverClassName(environment.getProperty(PROPERTY_DRIVER));
-
-        // Optionnel : tu peux configurer d'autres paramètres ici
-        // ds.setMaximumPoolSize(10);
-        // ds.setMinimumIdle(2);
-        // ds.setIdleTimeout(30000);
-        // ds.setMaxLifetime(600000);
-
         return ds;
     }
 
-
-    /*
-    @Bean
-    DataSource dataSource() {
-        DriverManagerDataSource ds = new DriverManagerDataSource();
-        ds.setUrl(environment.getProperty(PROPERTY_URL));
-        ds.setUsername(environment.getProperty(PROPERTY_USERNAME));
-        ds.setPassword(environment.getProperty(PROPERTY_PASSWORD));
-        ds.setDriverClassName(environment.getProperty(PROPERTY_DRIVER));
-        return ds;
-    }
-*/
     Properties hibernateProps() {
         Properties properties = new Properties();
         properties.setProperty(PROPERTY_SHOW_SQL, environment.getProperty(PROPERTY_SHOW_SQL));

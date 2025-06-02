@@ -16,9 +16,13 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
     }
-/*
+
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
+    }
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé"));
     }
 
@@ -34,7 +38,7 @@ public class UserService {
         return user.getId();
     }
 
- */
+
 
     public Long getUserIdByUsername(String username) {
         User user = userRepository.findByUsername(username)

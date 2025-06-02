@@ -1,6 +1,8 @@
 package ma.ensa.ebankingver1.controller;
 
 import ma.ensa.ebankingver1.model.Role;
+import ma.ensa.ebankingver1.service.AuditService;
+import ma.ensa.ebankingver1.service.Infobip2FAService;
 import ma.ensa.ebankingver1.service.UserService;
 import ma.ensa.ebankingver1.util.JwtUtil;
 import org.slf4j.Logger;
@@ -29,11 +31,14 @@ public class LoginController {
     private UserService userService;
     @Autowired
     private Infobip2FAService twoFAService;
+    @Autowired
+    private AuditService auditService;
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
         try {
+            Long userId = userService.getUserIdByUsername(username);
             logger.info("Login attempt for username: {}", username);
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             Role role = userService.getUserRoleByUsername(username);
@@ -46,7 +51,9 @@ public class LoginController {
                     response.put("message", "Code de vérification envoyé. Veuillez vérifier votre téléphone.");
                     response.put("requires2FA", "true");
                     response.put("username", username);
+                    auditService.logAction("LOGIN_SUCCESS", "USER", userId.toString(), Map.of("username", username), true);
                     return ResponseEntity.ok(response);
+
                 } else {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body("Erreur lors de l'envoi du code de vérification");
@@ -54,17 +61,20 @@ public class LoginController {
             } else {
                 // Non-CLIENT users login directly
                 String token = jwtUtil.generateToken(username);
-                Long userId = userService.getUserIdByUsername(username);
+                //Long userId = userService.getUserIdByUsername(username);
 
                 Map<String, String> response = new HashMap<>();
                 response.put("token", token);
                 response.put("role", role.name());
                 response.put("clientId", userId.toString());
                 response.put("message", "Authentification réussie !");
+                auditService.logAction("LOGIN_SUCCESS", "USER", userId.toString(), Map.of("username", username), true);
                 return ResponseEntity.ok(response);
+
             }
         } catch (Exception e) {
             logger.error("Login failed for username: {}, error: {}", username, e.getMessage());
+            auditService.logAction("LOGIN_FAILURE", "USER", null, Map.of("username", username), false);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiants invalides");
         }
     }
