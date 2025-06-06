@@ -1,5 +1,5 @@
 package ma.ensa.ebankingver1.DTO;
-
+/*
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import ma.ensa.ebankingver1.model.AccountStatus;
@@ -29,3 +29,5 @@ public class BankAccountDTO {
     public ClientDTO getClient() { return client; }
     public void setClient(ClientDTO client) { this.client = client; }
 }
+
+ */

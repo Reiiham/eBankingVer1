@@ -1,6 +1,6 @@
 
 package ma.ensa.ebankingver1.controller;
-
+/*
 import jakarta.persistence.EntityNotFoundException;
 import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.ai.AIAssistantService;

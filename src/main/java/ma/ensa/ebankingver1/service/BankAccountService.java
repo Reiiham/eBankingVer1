@@ -1,5 +1,5 @@
 package ma.ensa.ebankingver1.service;
-
+/*
 import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.model.BankAccount;
 
@@ -28,3 +28,5 @@ public interface BankAccountService {
     BeneficiaryDTO addBeneficiary(String clientId, BeneficiaryDTO beneficiaryDTO);
     public List<BankAccountDTO> getAllBankAccounts();// Added
 }
+
+ */

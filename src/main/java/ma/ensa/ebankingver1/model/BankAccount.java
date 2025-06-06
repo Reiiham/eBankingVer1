@@ -6,31 +6,63 @@ import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.*;
+
+import java.util.List;
+
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "TYPE" , length = 10)
+@Table(name = "accounts")
 public class BankAccount {
     @Id
     private String id;
-    private double balance;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date createAt;
 
-    @Enumerated(EnumType.STRING)
-    private AccountStatus status;
+    @PrePersist
+    public void generateId() {
+        if (this.id == null) {
+            this.id = java.util.UUID.randomUUID().toString();
+        }
+    }
+
+    // Encrypted, stored in DB
+    @Column(name = "accountnumber")
+    private String accountNumber;
+
+    // Human-readable format, for display/search
+    @Transient
+    private String rawAccountNumber;
+
+    @Column(name = "rib", nullable = false, unique = true)
+    private String rib;
+
+
+    private String type; // courant / épargne
+    private double balance;
 
     @ManyToOne
-    private User client;
-    @OneToMany(mappedBy = "bankAccount" , fetch = FetchType.LAZY)
-    private List<AccountOperation> accountOperations;
-    public BankAccount() {
-    }
-    //setters and getters
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
+    private List<Transaction> transactions;
+
+    // getters and setters
     public String getId() {
         return id;
     }
     public void setId(String id) {
         this.id = id;
+    }
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
     }
     public double getBalance() {
         return balance;
@@ -38,41 +70,26 @@ public class BankAccount {
     public void setBalance(double balance) {
         this.balance = balance;
     }
-    public Date getCreateAt() {
-        return createAt;
+    public User getUser() {
+        return user;
     }
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
+    public void setUser(User user) {
+        this.user = user;
     }
-    public AccountStatus getStatus() {
-        return status;
+    public List<Transaction> getTransactions() { return transactions; }
+    public void setTransactions(List<Transaction> transactions) { this.transactions = transactions; }
+    public String getRawAccountNumber() {
+        return rawAccountNumber;
     }
-    public void setStatus(AccountStatus status) {
-        this.status = status;
+    public void setRawAccountNumber(String rawAccountNumber) {
+        this.rawAccountNumber = rawAccountNumber;
+    }
+    public String getRib() {
+        return rib;
     }
 
-    public User getClient() {
-        return client;
-    }
-    public void setClient(User client) {
-        this.client = client;
-    }
-    public List<AccountOperation> getAccountOperations() {
-        return accountOperations;
-    }
-    public void setAccountOperations(List<AccountOperation> accountOperations) {
-        this.accountOperations = accountOperations;
-    }
-    @Override
-    public String toString() {
-        return "BankAccount{" +
-                "id='" + id + '\'' +
-                ", balance=" + balance +
-                ", createAt=" + createAt +
-                ", status=" + status +
-                ", client=" + client +
-                ", accountOperations=" + accountOperations +
-                '}';
+    public void setRib(String rib) {
+        this.rib = rib;
     }
 
 }

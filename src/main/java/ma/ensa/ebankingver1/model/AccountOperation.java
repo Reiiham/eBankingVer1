@@ -3,7 +3,7 @@ package ma.ensa.ebankingver1.model;
 import jakarta.persistence.*;
 
 import java.util.Date;
-
+/*
 @Entity
 public class AccountOperation {
     @Id
@@ -50,3 +50,5 @@ public class AccountOperation {
                 '}';
     }
 }
+
+ */

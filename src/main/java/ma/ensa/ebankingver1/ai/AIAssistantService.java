@@ -1,5 +1,5 @@
 package ma.ensa.ebankingver1.ai;
-
+/*
 import ma.ensa.ebankingver1.model.User;
 import ma.ensa.ebankingver1.service.BankAccountService;
 import ma.ensa.ebankingver1.service.UserService;
@@ -164,3 +164,5 @@ public class AIAssistantService {
         };
     }
 }
+
+ */

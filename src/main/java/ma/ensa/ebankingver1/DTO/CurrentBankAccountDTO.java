@@ -1,5 +1,5 @@
 package ma.ensa.ebankingver1.DTO;
-
+/*
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import ma.ensa.ebankingver1.model.AccountStatus;
@@ -13,3 +13,5 @@ public class CurrentBankAccountDTO extends BankAccountDTO {
     public double getOverDraft() { return overDraft; }
     public void setOverDraft(double overDraft) { this.overDraft = overDraft; }
 }
+
+ */

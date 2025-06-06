@@ -1,5 +1,5 @@
 package ma.ensa.ebankingver1.repository;
-
+/*
 import ma.ensa.ebankingver1.model.AccountOperation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,3 +11,5 @@ public interface AccountOperationRepository extends JpaRepository<AccountOperati
     public List<AccountOperation> findByBankAccountIdOrderByOperationDateDesc(String accountId);
     public Page<AccountOperation> findByBankAccountIdOrderByOperationDateDesc(String accountId, Pageable pageable);
 }
+
+ */

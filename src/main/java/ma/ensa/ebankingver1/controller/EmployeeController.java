@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ma.ensa.ebankingver1.service.EmployeeService;
-
+/*
 @RestController
 @RequestMapping("/api/employees")
 public class EmployeeController {
@@ -26,3 +26,5 @@ public class EmployeeController {
         return new ResponseEntity<>("Mot de passe changé avec succès", HttpStatus.OK);
     }
 }
+
+ */

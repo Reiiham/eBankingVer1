@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -43,28 +44,38 @@ public class User {
     @Column(unique = true, nullable = false)
     private String cin;
 
-    // Stocker seulement le nom du fichier (pas le chemin complet)
-    //@Column(name = "cin_photo_filename")
-    //private String cinPhotoFilename;
 
     // Getters et Setters
     public String getCin() { return cin; }
     public void setCin(String cin) { this.cin = cin; }
 
-    //public String getCinPhotoFilename() { return cinPhotoFilename; }
-    //public void setCinPhotoFilename(String cinPhotoFilename) { this.cinPhotoFilename = cinPhotoFilename; }
+    @Column(name = "compte_bloque")
+    private Boolean compteBloque;
+    @Column(name = "documents_complets")
+    private Boolean documentsComplets;
 
-    // Méthode helper pour obtenir l'URL de l'image
-    //public String getCinPhotoUrl() {
-    //  if (cinPhotoFilename != null) {
-    //    return "/api/employees/cin-photo/" + cinPhotoFilename;}
-    //return null;}
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> servicesActifs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<BankAccount> accounts;
+
+    public boolean isCompteBloque() { return compteBloque; }
+    public boolean isDocumentsComplets() { return documentsComplets; }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<SuspendedService> suspendedServices = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "client")
+
+
+/*
+    @OneToMany(mappedBy = "user")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<BankAccount> bankAccounts;
 
+
+ */
     @Column(name = "token")
     private String token;
 
@@ -91,6 +102,30 @@ public class User {
 
     public User() {
     }
+    public List<String> getServicesActifs() { return servicesActifs; }
+    public void setServicesActifs(List<String> servicesActifs) { this.servicesActifs = servicesActifs; }
+
+    public List<BankAccount> getAccounts() { return accounts; }
+    public void setAccounts(List<BankAccount> accounts) { this.accounts = accounts; }
+
+    public Boolean getCompteBloque() { return compteBloque; }
+    public void setCompteBloque(boolean compteBloque) {
+        this.compteBloque = compteBloque;
+    }
+
+    public Boolean getDocumentsComplets() { return documentsComplets; }
+    public void setDocumentsComplets(boolean documentsComplets) {
+        this.documentsComplets = documentsComplets;
+    }
+
+    public List<SuspendedService> getSuspendedServices() {
+        return suspendedServices;
+    }
+
+    public void setSuspendedServices(List<SuspendedService> suspendedServices) {
+        this.suspendedServices = suspendedServices;
+    }
+
 
     public Long getId() {
         return id;
@@ -161,12 +196,15 @@ public class User {
     public void setMustChangePassword(Boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
     }
+    /*
     public List<BankAccount> getBankAccounts() {
         return bankAccounts;
     }
     public void setBankAccounts(List<BankAccount> bankAccounts) {
         this.bankAccounts = bankAccounts;
     }
+
+     */
 
     public String getUsername() {
         return username;

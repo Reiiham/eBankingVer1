@@ -1,5 +1,5 @@
 package ma.ensa.ebankingver1.DTO;
-
+/*
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import ma.ensa.ebankingver1.model.AccountStatus;
@@ -13,3 +13,6 @@ public class SavingBankAccountDTO extends BankAccountDTO {
     public double getInterestRate() { return interestRate; }
     public void setInterestRate(double interestRate) { this.interestRate = interestRate; }
 }
+
+
+ */
