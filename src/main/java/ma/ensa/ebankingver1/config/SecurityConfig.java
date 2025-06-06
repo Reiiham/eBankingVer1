@@ -100,6 +100,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
                         .requestMatchers("/api/employee/**").hasRole("EMPLOYEE")
+                        .requestMatchers("/api/auth/validate-token/**").permitAll()
+                        .requestMatchers("/api/auth/set-password").permitAll()
+                        .requestMatchers("/api/auth/resend-activation").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

@@ -120,9 +120,7 @@ public class ClientController {
         try {
             logger.info("Processing AI request for clientId: {}, request: {}, language: {}", clientId, request, language);
             AIResponse response = aiAssistantService.processClientRequest(clientId, request, language);
-            auditService.logAction("AI_REQUEST", "ASSISTANT", clientId,
-                    Map.of("request", request, "intent", response.getResponseText().contains("recharge") ? "recharge_phone" : response.getResponseText().contains("solde") ? "check_balance" : "unknown"),
-                    response.isSuccess());
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error in assistant endpoint for clientId: {}, request: {}. Exception: {}", clientId, request, e.getMessage(), e);

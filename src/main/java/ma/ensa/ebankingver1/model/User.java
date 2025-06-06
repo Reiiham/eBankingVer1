@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -36,8 +37,6 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "token")
-    private String token;
 
     @Column(name = "must_change_password")
     private Boolean mustChangePassword;
@@ -65,6 +64,29 @@ public class User {
     @OneToMany(mappedBy = "client")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<BankAccount> bankAccounts;
+
+    @Column(name = "token")
+    private String token;
+
+    @Column(name = "token_expiry")
+    private LocalDateTime tokenExpiry;
+
+    // Getters et setters
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public LocalDateTime getTokenExpiry() {
+        return tokenExpiry;
+    }
+
+    public void setTokenExpiry(LocalDateTime tokenExpiry) {
+        this.tokenExpiry = tokenExpiry;
+    }
 
 
     public User() {
@@ -131,13 +153,6 @@ public class User {
         this.password = password;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 
     public Boolean getMustChangePassword() {
         return mustChangePassword;
