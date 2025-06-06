@@ -3,7 +3,8 @@ import io.mailtrap.client.MailtrapClient;
 import io.mailtrap.model.request.emails.Address;
 import io.mailtrap.model.request.emails.MailtrapMail;
 import ma.ensa.ebankingver1.DTO.EmployeeDTO;
-import ma.ensa.ebankingver1.controller.ClientController;
+//import ma.ensa.ebankingver1.controller.ClientController;
+import ma.ensa.ebankingver1.controller.AdminController;
 import ma.ensa.ebankingver1.model.Role;
 import ma.ensa.ebankingver1.model.User;
 import ma.ensa.ebankingver1.repository.UserRepository;
@@ -23,13 +24,14 @@ import java.util.Optional;
 @Service
 @Transactional
 public class EmployeeService {
-    private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private MailtrapClient mailtrapClient;
+
 
     private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final int USERNAME_DIGITS = 6;
