@@ -1,5 +1,6 @@
 package ma.ensa.ebankingver1.service;
 
+import ma.ensa.ebankingver1.model.BankService;
 import ma.ensa.ebankingver1.model.Role;
 import ma.ensa.ebankingver1.model.User;
 import ma.ensa.ebankingver1.repository.UserRepository;
@@ -54,6 +55,10 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return user.getTel();
+    }
+    public boolean hasActiveService(Long userId, BankService service) {
+        User user = findById(userId);
+        return user != null && user.getServicesActifs().contains(service.name());
     }
 
 }

@@ -19,6 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByToken(String token);
     @Query("SELECT COUNT(u) FROM User u WHERE u.role = ma.ensa.ebankingver1.model.Role.CLIENT")
     long countClients();
+    @Query("SELECT u FROM User u WHERE :service MEMBER OF u.servicesActifs")
+    List<User> findUsersWithActiveService(@Param("service") String service);
 
     @Query("""
    SELECT u FROM User u

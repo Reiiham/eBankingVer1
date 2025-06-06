@@ -33,6 +33,8 @@ public class LoginController {
     private Infobip2FAService twoFAService;
     @Autowired
     private AuditService auditService;
+    boolean disable2FAForClients = true; // Set to true to disable 2FA for CLIENT role
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
@@ -43,8 +45,8 @@ public class LoginController {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             Role role = userService.getUserRoleByUsername(username);
             // Check if user is CLIENT and requires 2FA
-            if (role == Role.CLIENT) {
-                // Send 2FA PIN instead of immediate login
+            if (role == Role.CLIENT && !disable2FAForClients) {
+                // Envoie du code 2FA
                 boolean pinSent = twoFAService.sendPin(username);
                 if (pinSent) {
                     Map<String, String> response = new HashMap<>();
@@ -53,31 +55,29 @@ public class LoginController {
                     response.put("username", username);
                     auditService.logAction("LOGIN_SUCCESS", "USER", userId.toString(), Map.of("username", username), true);
                     return ResponseEntity.ok(response);
-
                 } else {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body("Erreur lors de l'envoi du code de vérification");
                 }
-            } else {
-                // Non-CLIENT users login directly
-                String token = jwtUtil.generateToken(username);
-                //Long userId = userService.getUserIdByUsername(username);
-
-                Map<String, String> response = new HashMap<>();
-                response.put("token", token);
-                response.put("role", role.name());
-                response.put("clientId", userId.toString());
-                response.put("message", "Authentification réussie !");
-                auditService.logAction("LOGIN_SUCCESS", "USER", userId.toString(), Map.of("username", username), true);
-                return ResponseEntity.ok(response);
-
             }
+
+            // Authentification directe (admin, employé, ou client sans 2FA)
+            String token = jwtUtil.generateToken(username);
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            response.put("role", role.name());
+            response.put("clientId", userId.toString());
+            response.put("message", "Authentification réussie !");
+            auditService.logAction("LOGIN_SUCCESS", "USER", userId.toString(), Map.of("username", username), true);
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             logger.error("Login failed for username: {}, error: {}", username, e.getMessage());
             auditService.logAction("LOGIN_FAILURE", "USER", null, Map.of("username", username), false);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiants invalides");
         }
     }
+
 
     @PostMapping("/verify-2fa")
     public ResponseEntity<?> verify2FA(@RequestBody Map<String, String> body) {
@@ -184,6 +184,8 @@ public class LoginController {
         }
     }
 }
+
+
 /*
 public class LoginController {
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);

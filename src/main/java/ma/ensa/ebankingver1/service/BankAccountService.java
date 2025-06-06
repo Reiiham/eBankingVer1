@@ -1,11 +1,18 @@
 package ma.ensa.ebankingver1.service;
-/*
+
 import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.model.BankAccount;
 
 import java.util.List;
 
 public interface BankAccountService {
+
+    BankAccount findById(String id);
+    BankAccount findByRib(String rib);
+    BankAccount save(BankAccount account);
+    List<BankAccount> findByUserId(Long userId);
+
+    /*
     ClientDTO saveClient(ClientDTO clientDTO);
 
     CurrentBankAccountDTO saveCurrentBankAccount(double initialBalance, Long clientId, double overDraft);
@@ -27,6 +34,7 @@ public interface BankAccountService {
     List<BeneficiaryDTO> getBeneficiaries(String clientId); // Added
     BeneficiaryDTO addBeneficiary(String clientId, BeneficiaryDTO beneficiaryDTO);
     public List<BankAccountDTO> getAllBankAccounts();// Added
+
+     */
 }
 
- */

@@ -1,10 +1,11 @@
 package ma.ensa.ebankingver1.service;
-/*
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.model.*;
-import ma.ensa.ebankingver1.repository.AccountOperationRepository;
+//import ma.ensa.ebankingver1.repository.AccountOperationRepository;
+//import ma.ensa.ebankingver1.repository.BankAccountRepository;
 import ma.ensa.ebankingver1.repository.BankAccountRepository;
 import ma.ensa.ebankingver1.repository.BeneficiaryRepository;
 import ma.ensa.ebankingver1.repository.UserRepository;
@@ -23,6 +24,30 @@ import java.util.stream.Collectors;
 
 @Service
 public class BankAccountServiceImpl implements BankAccountService {
+
+    @Autowired
+    private BankAccountRepository bankAccountRepository;
+
+    @Override
+    public BankAccount findById(String id) {
+        return bankAccountRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public BankAccount findByRib(String rib) {
+        return bankAccountRepository.findByRib(rib);
+    }
+
+    @Override
+    public BankAccount save(BankAccount account) {
+        return bankAccountRepository.save(account);
+    }
+
+    @Override
+    public List<BankAccount> findByUserId(Long userId) {
+        return bankAccountRepository.findByUserId(userId);
+    }
+    /*
     @Autowired
     private UserRepository clientRepository;
     @Autowired
@@ -332,5 +357,5 @@ public class BankAccountServiceImpl implements BankAccountService {
                 .collect(Collectors.toList());
     }
 
-}
 */
+}
