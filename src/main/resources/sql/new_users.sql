@@ -23,11 +23,11 @@ INSERT INTO users (
 INSERT INTO accounts (
     balance, user_id, accountnumber, id, rib, type
 ) VALUES
-      (295000, 3, 'I0a9QU1IIC1EkyO49opaCQ==', '28a5c45c-0846-47a6-a145-cf2614a0dec3', '12345678900027230234091', 'courant'),
+      (295000, 3, 'I0a9QU1IIC1EkyO49opaCQ==', '28a5c45c-0846-47a6-a145-cf2614a0dec3', '123456789000272302340910', 'courant'),
 
-      (294000, 4, 'bMcD2uEJDyl3WKt7emHydQ==', 'dd287a57-458b-42a9-a0e2-1d5859e1323a', '12345678900063359753612', 'courant'),
+      (294000, 4, 'bMcD2uEJDyl3WKt7emHydQ==', 'dd287a57-458b-42a9-a0e2-1d5859e1323a', '123456789000633597536120', 'courant'),
 
-      (296000, 2, 'MG1eBBENI1qG1k6Gb5DEVw==', '12deba08-bf46-4719-afdf-b20efd374a1a', '12345678900092812631431', 'courant');
+      (296000, 2, 'MG1eBBENI1qG1k6Gb5DEVw==', '12deba08-bf46-4719-afdf-b20efd374a1a', '123456789000928126314319', 'courant');
 
 
 INSERT INTO user_servicesactifs (user_id, servicesactifs) VALUES

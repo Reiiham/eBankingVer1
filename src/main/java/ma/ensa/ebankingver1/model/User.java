@@ -43,7 +43,11 @@ public class User {
     private Boolean mustChangePassword;
     @Column(unique = true, nullable = false)
     private String cin;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Beneficiary> beneficiaries = new ArrayList<>();
 
+    public List<Beneficiary> getBeneficiaries() { return beneficiaries; }
+    public void setBeneficiaries(List<Beneficiary> beneficiaries) { this.beneficiaries = beneficiaries; }
 
     // Getters et Setters
     public String getCin() { return cin; }
