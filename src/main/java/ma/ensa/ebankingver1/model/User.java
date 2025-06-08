@@ -14,125 +14,81 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "username", unique = true, nullable = false)
+
+    @Column(name = "username", unique = true, nullable = false, length = 50)
     private String username;
 
-
-    @Column(name = "first_name")
+    @Column(name = "first_name", length = 100)
     private String firstName;
-    @Column(name = "last_name")
+
+    @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(name = "email")
+    @Column(name = "email", length = 150)
     private String email;
 
-    @Column(name = "Tel")
+    @Column(name = "Tel", length = 20)
     private String Tel;
 
     @Column(name = "Birth_Date")
     private LocalDate Birth_Date;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
+    @Column(name = "role", length = 20)
     private Role role;
-    @Column(name = "password")
-    private String password;
 
+    @Column(name = "password", length = 255) // BCrypt fait ~60 caractères
+    private String password;
 
     @Column(name = "must_change_password")
     private Boolean mustChangePassword;
-    @Column(unique = true, nullable = false)
+
+    @Column(unique = true, nullable = false, length = 20)
     private String cin;
-
-
-    // Getters et Setters
-    public String getCin() { return cin; }
-    public void setCin(String cin) { this.cin = cin; }
 
     @Column(name = "compte_bloque")
     private Boolean compteBloque;
+
     @Column(name = "documents_complets")
     private Boolean documentsComplets;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_services_actifs", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "service", length = 100)
     private List<String> servicesActifs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY) // Changé en LAZY pour performance
     private List<BankAccount> accounts;
 
-    public boolean isCompteBloque() { return compteBloque; }
-    public boolean isDocumentsComplets() { return documentsComplets; }
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SuspendedService> suspendedServices = new ArrayList<>();
 
-
-
-
-/*
-    @OneToMany(mappedBy = "user")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private List<BankAccount> bankAccounts;
-
-
- */
-    @Column(name = "token")
+    // IMPORTANT: Token peut être très long (JWT), utiliser TEXT
+    @Column(name = "token", columnDefinition = "TEXT")
     private String token;
 
     @Column(name = "token_expiry")
     private LocalDateTime tokenExpiry;
 
-    // Getters et setters
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public LocalDateTime getTokenExpiry() {
-        return tokenExpiry;
-    }
-
-    public void setTokenExpiry(LocalDateTime tokenExpiry) {
-        this.tokenExpiry = tokenExpiry;
-    }
-
-
+    // Constructeurs
     public User() {
     }
-    public List<String> getServicesActifs() { return servicesActifs; }
-    public void setServicesActifs(List<String> servicesActifs) { this.servicesActifs = servicesActifs; }
 
-    public List<BankAccount> getAccounts() { return accounts; }
-    public void setAccounts(List<BankAccount> accounts) { this.accounts = accounts; }
-
-    public Boolean getCompteBloque() { return compteBloque; }
-    public void setCompteBloque(boolean compteBloque) {
-        this.compteBloque = compteBloque;
-    }
-
-    public Boolean getDocumentsComplets() { return documentsComplets; }
-    public void setDocumentsComplets(boolean documentsComplets) {
-        this.documentsComplets = documentsComplets;
-    }
-
-    public List<SuspendedService> getSuspendedServices() {
-        return suspendedServices;
-    }
-
-    public void setSuspendedServices(List<SuspendedService> suspendedServices) {
-        this.suspendedServices = suspendedServices;
-    }
-
-
+    // Getters et Setters
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getFirstName() {
@@ -150,6 +106,7 @@ public class User {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
     public String getEmail() {
         return email;
     }
@@ -163,7 +120,7 @@ public class User {
     }
 
     public void setTel(String tel) {
-        this.Tel=tel;
+        this.Tel = tel;
     }
 
     public LocalDate getBirth_Date() {
@@ -177,9 +134,11 @@ public class User {
     public Role getRole() {
         return role;
     }
-    public void setRole(Role role){
+
+    public void setRole(Role role) {
         this.role = role;
     }
+
     public String getPassword() {
         return password;
     }
@@ -188,7 +147,6 @@ public class User {
         this.password = password;
     }
 
-
     public Boolean getMustChangePassword() {
         return mustChangePassword;
     }
@@ -196,24 +154,78 @@ public class User {
     public void setMustChangePassword(Boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
     }
-    /*
-    public List<BankAccount> getBankAccounts() {
-        return bankAccounts;
-    }
-    public void setBankAccounts(List<BankAccount> bankAccounts) {
-        this.bankAccounts = bankAccounts;
+
+    public String getCin() {
+        return cin;
     }
 
-     */
-
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
+    public void setCin(String cin) {
+        this.cin = cin;
     }
 
+    public Boolean getCompteBloque() {
+        return compteBloque;
+    }
 
+    public void setCompteBloque(Boolean compteBloque) {
+        this.compteBloque = compteBloque;
+    }
+
+    public Boolean getDocumentsComplets() {
+        return documentsComplets;
+    }
+
+    public void setDocumentsComplets(Boolean documentsComplets) {
+        this.documentsComplets = documentsComplets;
+    }
+
+    public boolean isCompteBloque() {
+        return compteBloque != null ? compteBloque : false;
+    }
+
+    public boolean isDocumentsComplets() {
+        return documentsComplets != null ? documentsComplets : false;
+    }
+
+    public List<String> getServicesActifs() {
+        return servicesActifs;
+    }
+
+    public void setServicesActifs(List<String> servicesActifs) {
+        this.servicesActifs = servicesActifs;
+    }
+
+    public List<BankAccount> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<BankAccount> accounts) {
+        this.accounts = accounts;
+    }
+
+    public List<SuspendedService> getSuspendedServices() {
+        return suspendedServices;
+    }
+
+    public void setSuspendedServices(List<SuspendedService> suspendedServices) {
+        this.suspendedServices = suspendedServices;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public LocalDateTime getTokenExpiry() {
+        return tokenExpiry;
+    }
+
+    public void setTokenExpiry(LocalDateTime tokenExpiry) {
+        this.tokenExpiry = tokenExpiry;
+    }
 
     @Override
     public String toString() {
@@ -226,10 +238,9 @@ public class User {
                 ", Tel='" + Tel + '\'' +
                 ", Birth_Date=" + Birth_Date +
                 ", role=" + role +
-                ", password='" + password + '\'' +
-                ", token='" + token + '\'' +
-                ", mustChangePassword=" + mustChangePassword +
                 ", cin='" + cin + '\'' +
+                ", compteBloque=" + compteBloque +
+                ", documentsComplets=" + documentsComplets +
                 '}';
     }
 }

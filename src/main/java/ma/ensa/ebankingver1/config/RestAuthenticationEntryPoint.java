@@ -25,4 +25,3 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.getWriter().write("{\"error\": \"Unauthorized - Please log in.\"}");
     }
 }
-
