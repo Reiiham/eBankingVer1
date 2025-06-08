@@ -85,11 +85,6 @@ public class ClientService {
         return dtos;
     }
 
-//    public List<ClientSummaryDTO> searchClientsByName(String name) {
-//        Role role = Role.CLIENT;
-//        List<User> users = userRepository.findUsersWithAccountsByRoleAndNameContaining(role, name);
-//        return users.stream().map(ClientSummaryDTO::fromUser).toList();
-//    }
 
     public ClientSummaryDTO getClientWithDetails(Long id) {
         User user = userRepository.findById(id)
@@ -130,6 +125,11 @@ public class ClientService {
 //        }).collect(Collectors.toList());
 //    }
 
+    //    public List<ClientSummaryDTO> searchClientsByName(String name) {
+//        Role role = Role.CLIENT;
+//        List<User> users = userRepository.findUsersWithAccountsByRoleAndNameContaining(role, name);
+//        return users.stream().map(ClientSummaryDTO::fromUser).toList();
+//    }
 
 
 
