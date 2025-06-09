@@ -2,12 +2,16 @@ package ma.ensa.ebankingver1.model;
 
 import jakarta.persistence.*;
 
+<<<<<<< HEAD
 import java.time.LocalDateTime;
 
+=======
+>>>>>>> 11051e1e6c0c6b2d20e5f951fddd284d7ce5211a
 @Entity
 @Table(name = "beneficiaries")
 public class Beneficiary {
     @Id
+<<<<<<< HEAD
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -66,10 +70,32 @@ public class Beneficiary {
 
     public String getPrenom() { return prenom; }
     public void setPrenom(String prenom) { this.prenom = prenom; }
+=======
+    private String id;
+
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private User client;
+
+    private String rib;
+    private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private BankAccount account;
+
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public User getClient() { return client; }
+    public void setClient(User client) { this.client = client; }
+>>>>>>> 11051e1e6c0c6b2d20e5f951fddd284d7ce5211a
 
     public String getRib() { return rib; }
     public void setRib(String rib) { this.rib = rib; }
 
+<<<<<<< HEAD
     public RelationType getRelation() { return relation; }
     public void setRelation(RelationType relation) { this.relation = relation; }
 
@@ -99,3 +125,22 @@ public class Beneficiary {
         return (surnom != null && !surnom.trim().isEmpty()) ? surnom : getNomComplet();
     }
 }
+=======
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public BankAccount getAccount() { return account; }
+    public void setAccount(BankAccount account) { this.account = account; }
+
+    @Override
+    public String toString() {
+        return "Beneficiary{" +
+                "id='" + id + '\'' +
+                ", client=" + client +
+                ", rib='" + rib + '\'' +
+                ", name='" + name + '\'' +
+                ", account=" + account +
+                '}';
+    }
+}
+>>>>>>> 11051e1e6c0c6b2d20e5f951fddd284d7ce5211a

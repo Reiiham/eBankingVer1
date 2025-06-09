@@ -1,6 +1,7 @@
 
 package ma.ensa.ebankingver1.controller;
 
+<<<<<<< HEAD
 import jakarta.validation.Valid;
 import ma.ensa.ebankingver1.DTO.BeneficiaryResponseDTO;
 import ma.ensa.ebankingver1.DTO.*;
@@ -8,6 +9,15 @@ import ma.ensa.ebankingver1.DTO.TransferRequest;
 import ma.ensa.ebankingver1.DTO.TransferResponse;
 import ma.ensa.ebankingver1.model.*;
 import ma.ensa.ebankingver1.service.BeneficiaryService;
+=======
+import ma.ensa.ebankingver1.DTO.TransactionHistoryDTO;
+import ma.ensa.ebankingver1.DTO.TransferRequest;
+import ma.ensa.ebankingver1.DTO.TransferResponse;
+import ma.ensa.ebankingver1.model.BankAccount;
+import ma.ensa.ebankingver1.model.BankService;
+import ma.ensa.ebankingver1.model.Transaction;
+import ma.ensa.ebankingver1.model.User;
+>>>>>>> 11051e1e6c0c6b2d20e5f951fddd284d7ce5211a
 import ma.ensa.ebankingver1.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +29,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+<<<<<<< HEAD
 import java.util.Arrays;
+=======
+>>>>>>> 11051e1e6c0c6b2d20e5f951fddd284d7ce5211a
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,8 +46,11 @@ public class ClientController {
 
     @Autowired
     private BankAccountService bankAccountService;
+<<<<<<< HEAD
     @Autowired
     private BeneficiaryService beneficiaryService;
+=======
+>>>>>>> 11051e1e6c0c6b2d20e5f951fddd284d7ce5211a
 
     @Autowired
     private TransactionService transactionService;
@@ -254,6 +270,7 @@ public class ClientController {
 
         return transactionId;
     }
+<<<<<<< HEAD
     /**
      * Obtenir tous les bénéficiaires d'un client
      */
@@ -474,6 +491,8 @@ public class ClientController {
                     .body(Map.of("error", "Erreur lors de la récupération des types de relation"));
         }
     }
+=======
+>>>>>>> 11051e1e6c0c6b2d20e5f951fddd284d7ce5211a
 }
 
 /*
