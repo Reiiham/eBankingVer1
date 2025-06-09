@@ -8,7 +8,24 @@ public class ClientUpdateRequest extends SecureActionRequest{
     private String newTel;
     private String supervisorPassword;
 
+    private Boolean documentsComplets;
+    private Boolean compteBloque;
+
+
     public ClientUpdateRequest() {
+    }
+
+    public Boolean getDocumentsComplets() {
+        return documentsComplets;
+    }
+    public void setDocumentsComplets(Boolean documentsComplets) {
+        this.documentsComplets = documentsComplets;
+    }
+    public Boolean getCompteBloque() {
+        return compteBloque;
+    }
+    public void setCompteBloque(Boolean compteBloque) {
+        this.compteBloque = compteBloque;
     }
 
     public Long getClientId() {

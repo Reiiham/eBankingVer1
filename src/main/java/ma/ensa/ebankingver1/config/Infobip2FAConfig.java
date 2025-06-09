@@ -5,7 +5,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 @Component
-@PropertySource("classpath:sms.properties")
+@PropertySource(value = "classpath:sms.properties")
 public class Infobip2FAConfig {
 
     @Value("${infobip.api.key}")

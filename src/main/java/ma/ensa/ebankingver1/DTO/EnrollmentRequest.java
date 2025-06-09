@@ -10,6 +10,10 @@ public class EnrollmentRequest {
     private double balance;
     private String cin;
 
+    private Boolean documentsComplets;
+    private Boolean compteBloque;
+
+
     public String getCin() {
         return cin;
     }
@@ -19,6 +23,20 @@ public class EnrollmentRequest {
 
 
     public EnrollmentRequest() {
+    }
+
+    public Boolean getCompteBloque() {
+        return compteBloque;
+    }
+    public void setCompteBloque(Boolean compteBloque) {
+        this.compteBloque = compteBloque;
+    }
+
+    public Boolean getDocumentsComplets() {
+        return documentsComplets;
+    }
+    public void setDocumentsComplets(Boolean documentsComplets) {
+        this.documentsComplets = documentsComplets;
     }
 
     public String getFirstName() {

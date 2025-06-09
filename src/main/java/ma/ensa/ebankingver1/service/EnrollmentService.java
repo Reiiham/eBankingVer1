@@ -91,6 +91,9 @@ public class EnrollmentService {
         client.setBirth_Date(LocalDate.parse(dto.getBirthDate()));
         client.setRole(Role.CLIENT);
         client.setCin(dto.getCin());
+        client.setDocumentsComplets(dto.getDocumentsComplets() != null && dto.getDocumentsComplets());
+        client.setCompteBloque(dto.getCompteBloque() != null && dto.getCompteBloque());
+
 
         // Username et password auto-générés
         String generatedUsername = generateUniqueUsername();
@@ -142,7 +145,7 @@ public class EnrollmentService {
     public void sendEmail(String to, String subject, String content) {
         try {
             final MailtrapMail mail = MailtrapMail.builder()
-                    .from(new Address("hello@demomailtrap.com", "Équipe Bancaire"))
+                    .from(new Address("hello@demomailtrap.co", "Équipe Bancaire"))
                     .to(List.of(new Address(to)))
                     .subject(subject)
                     .text(content)
@@ -183,6 +186,9 @@ public class EnrollmentService {
         if (dto.getNewLastName() != null) client.setLastName(dto.getNewLastName());
         if (dto.getNewEmail() != null) client.setEmail(dto.getNewEmail());
         if (dto.getNewTel() != null) client.setTel(dto.getNewTel());
+        if (dto.getDocumentsComplets() != null) client.setDocumentsComplets(dto.getDocumentsComplets());
+        if (dto.getCompteBloque() != null) client.setCompteBloque(dto.getCompteBloque());
+
 
         userRepository.save(client);
         return true;
