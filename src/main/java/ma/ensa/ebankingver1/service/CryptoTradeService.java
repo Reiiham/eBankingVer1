@@ -42,8 +42,9 @@ public class CryptoTradeService {
         }
 
         double currentPrice = rateService.getRate(symbol);
-        BigDecimal qty = BigDecimal.valueOf(usdAmount).divide(BigDecimal.valueOf(currentPrice), 6, RoundingMode.DOWN);
-
+        BigDecimal qty = BigDecimal.valueOf(usdAmount)
+                .divide(BigDecimal.valueOf(currentPrice), 5, RoundingMode.DOWN) // 5 décimales pour BTC
+                .stripTrailingZeros();
         User user = userService.findById(userId);
         if (user == null) {
             throw new IllegalArgumentException("Utilisateur non trouvé");

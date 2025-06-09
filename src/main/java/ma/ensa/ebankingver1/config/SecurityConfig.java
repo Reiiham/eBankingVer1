@@ -101,6 +101,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
                         .requestMatchers("/api/employee/**").hasRole("EMPLOYEE")
                         .requestMatchers("/api/crypto/**").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers("/api/recharge/**").hasAnyRole("CLIENT")
+
                         .requestMatchers("/api/auth/validate-token/**").permitAll()
                         .requestMatchers("/api/auth/set-password").permitAll()
                         .requestMatchers("/api/auth/resend-activation").permitAll()

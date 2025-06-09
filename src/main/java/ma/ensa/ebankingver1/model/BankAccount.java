@@ -44,6 +44,8 @@ public class BankAccount {
 
     @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
     private List<Transaction> transactions;
+    private String transactionPin;
+
 
     // getters and setters
     public String getId() {
@@ -90,6 +92,12 @@ public class BankAccount {
 
     public void setRib(String rib) {
         this.rib = rib;
+    }
+    public String getTransactionPin() {
+        return transactionPin;
+    }
+    public void setTransactionPin(String transactionPin) {
+        this.transactionPin = transactionPin;
     }
 
 }

@@ -1,4 +1,9 @@
 package ma.ensa.ebankingver1.model;
 
-public class RechargeStatus {
+public enum RechargeStatus {
+    PENDING,
+    PROCESSING,
+    COMPLETED,
+    FAILED,
+    CANCELLED
 }
