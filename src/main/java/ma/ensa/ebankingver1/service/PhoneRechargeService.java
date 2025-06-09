@@ -1,4 +1,4 @@
 package ma.ensa.ebankingver1.service;
 
-public class BankAccountServiceImpl {
+public class PhoneRechargeService {
 }
