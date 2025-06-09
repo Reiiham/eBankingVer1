@@ -3,13 +3,13 @@ import ma.ensa.ebankingver1.DTO.ClientUpdateRequest;
 import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.DTO.SecureActionRequest;
 import ma.ensa.ebankingver1.DTO.ServiceSuspensionRequest;
-import ma.ensa.ebankingver1.model.BankService;
-import ma.ensa.ebankingver1.model.SuspendedService;
-import ma.ensa.ebankingver1.model.User;
+import ma.ensa.ebankingver1.model.*;
 import ma.ensa.ebankingver1.repository.SuspendedServiceRepository;
 import ma.ensa.ebankingver1.repository.UserRepository;
+import ma.ensa.ebankingver1.service.BankAccountService;
 import ma.ensa.ebankingver1.service.ClientService;
 import ma.ensa.ebankingver1.service.EnrollmentService;
+import ma.ensa.ebankingver1.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +34,14 @@ public class EmployeeDashboardController {
 
     @Autowired
     private SuspendedServiceRepository suspendedServiceRepository;
+
+    private final BankAccountService bankAccountService;
+    private final TransactionService transactionService;
+
+    public EmployeeDashboardController(BankAccountService bankAccountService, TransactionService transactionService) {
+        this.bankAccountService = bankAccountService;
+        this.transactionService = transactionService;
+    }
 
 
     @GetMapping("/clients/count")
@@ -242,4 +250,62 @@ public class EmployeeDashboardController {
 
         return ResponseEntity.ok("Services réactivés avec succès");
     }
+
+    @PostMapping("/employee/transfer")
+    public ResponseEntity<String> transferFunds(@RequestBody TransferRequest request) {
+        try {
+            BankAccount from = bankAccountService.findById(request.getFromAccountId());
+            BankAccount to = bankAccountService.findByRib(request.getToRib());
+
+            if (from == null || to == null) {
+                return ResponseEntity.badRequest().body("Compte source ou destinataire introuvable");
+            }
+
+            if (from.getBalance() < request.getAmount()) {
+                return ResponseEntity.badRequest().body("Solde insuffisant");
+            }
+
+            if (request.getAmount() <= 0) {
+                return ResponseEntity.badRequest().body("Le montant doit être positif");
+            }
+
+            // Débit/crédit
+            from.setBalance(from.getBalance() - request.getAmount());
+            to.setBalance(to.getBalance() + request.getAmount());
+
+            bankAccountService.save(from);
+            bankAccountService.save(to);
+
+            // Transactions
+            Transaction debit = new Transaction();
+            debit.setId(java.util.UUID.randomUUID().toString() + "_DEBIT");
+            debit.setAmount(-request.getAmount());
+            debit.setType("VIREMENT_SORTANT");
+            debit.setDate(java.time.LocalDateTime.now());
+            debit.setAccount(from);
+            debit.setUser(from.getUser());
+
+            Transaction credit = new Transaction();
+            credit.setId(java.util.UUID.randomUUID().toString() + "_CREDIT");
+            credit.setAmount(request.getAmount());
+            credit.setType("VIREMENT_ENTRANT");
+            credit.setDate(java.time.LocalDateTime.now());
+            credit.setAccount(to);
+            credit.setUser(to.getUser());
+
+            transactionService.save(debit);
+            transactionService.save(credit);
+
+            return ResponseEntity.ok("✅ Virement effectué avec succès.");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors du virement : " + e.getMessage());
+        }
+    }
+
+
 }
+
+
+
