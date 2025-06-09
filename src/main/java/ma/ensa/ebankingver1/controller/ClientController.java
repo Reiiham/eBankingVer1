@@ -1,6 +1,7 @@
 
 package ma.ensa.ebankingver1.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import ma.ensa.ebankingver1.DTO.BeneficiaryResponseDTO;
 import ma.ensa.ebankingver1.DTO.*;
@@ -10,6 +11,7 @@ import ma.ensa.ebankingver1.ai.AIAssistantService;
 import ma.ensa.ebankingver1.model.*;
 import ma.ensa.ebankingver1.service.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,8 @@ public class ClientController {
     private AIAssistantService aiAssistantService;
     @Autowired
     private AuditService auditService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserService userService;
@@ -487,31 +491,31 @@ public class ClientController {
 
             User currentUser = userService.findByUsername(authentication.getName());
             if (!currentUser.getId().equals(clientId)) {
-                auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
-                        Map.of("error", "Unauthorized access"), false);
+                //auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+                        //Map.of("error", "Unauthorized access"), false);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Accès non autorisé"));
             }
 
             if (!currentUser.getServicesActifs().contains("ASSISTANT")) {
-                auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
-                        Map.of("error", "ASSISTANT service not activated"), false);
+                //auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+                        //Map.of("error", "ASSISTANT service not activated"), false);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "Service ASSISTANT non activé pour ce client."));
             }
 
             String requestText = requestBody.get("request");
             if (requestText == null || requestText.trim().isEmpty()) {
-                auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
-                        Map.of("error", "Empty request"), false);
+                //auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+                       // Map.of("error", "Empty request"), false);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", "La requête ne peut pas être vide"));
             }
 
             AIResponse aiResponse = aiAssistantService.processRequest(requestText, language, currentUser);
 
-            auditService.logAction("ASSISTANT_REQUEST_SUCCESS", "USER", clientId.toString(),
-                    Map.of("request", requestText, "response", aiResponse.getMessage(), "language", language), true);
+            //auditService.logAction("ASSISTANT_REQUEST_SUCCESS", "USER", clientId.toString(),
+              //      Map.of("request", requestText, "response", aiResponse.getMessage(), "language", language), true);
 
             return ResponseEntity.ok(Map.of(
                     "success", aiResponse.isSuccess(),
@@ -522,8 +526,8 @@ public class ClientController {
 
         } catch (Exception e) {
             logger.error("Error in assistant endpoint for clientId: {}, error: {}", clientId, e.getMessage());
-            auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
-                    Map.of("error", e.getMessage()), false);
+            //auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+              //      Map.of("error", e.getMessage()), false);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Erreur serveur: " + e.getMessage()));
         }
@@ -535,6 +539,7 @@ public class ClientController {
         response.put("modelAvailable", isModelAvailable);
         return ResponseEntity.ok(response);
     }
+
 }
 
 /*
