@@ -15,9 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/employee")
@@ -304,7 +306,48 @@ public class EmployeeDashboardController {
         }
     }
 
+    @PostMapping("/operations/deposit")
+    public ResponseEntity<?> deposit(@RequestBody OperationRequest request) {
+        BankAccount account = bankAccountService.findById(request.getAccountId());
+        if (account == null) return ResponseEntity.badRequest().body("Compte introuvable");
+        if (request.getAmount() <= 0) return ResponseEntity.badRequest().body("Montant invalide");
 
+        account.setBalance(account.getBalance() + request.getAmount());
+        bankAccountService.save(account);
+
+        Transaction tx = new Transaction();
+        tx.setId(UUID.randomUUID().toString());
+        tx.setAccount(account);
+        tx.setUser(account.getUser());
+        tx.setAmount(request.getAmount());
+        tx.setType("DEPOT");
+        tx.setDate(LocalDateTime.now());
+        transactionService.save(tx);
+
+        return ResponseEntity.ok("Dépôt effectué avec succès");
+    }
+
+    @PostMapping("/operations/withdraw")
+    public ResponseEntity<?> withdraw(@RequestBody OperationRequest request) {
+        BankAccount account = bankAccountService.findById(request.getAccountId());
+        if (account == null) return ResponseEntity.badRequest().body("Compte introuvable");
+        if (request.getAmount() <= 0 || request.getAmount() > account.getBalance())
+            return ResponseEntity.badRequest().body("Montant invalide ou solde insuffisant");
+
+        account.setBalance(account.getBalance() - request.getAmount());
+        bankAccountService.save(account);
+
+        Transaction tx = new Transaction();
+        tx.setId(UUID.randomUUID().toString());
+        tx.setAccount(account);
+        tx.setUser(account.getUser());
+        tx.setAmount(-request.getAmount());
+        tx.setType("RETRAIT");
+        tx.setDate(LocalDateTime.now());
+        transactionService.save(tx);
+
+        return ResponseEntity.ok("Retrait effectué avec succès");
+    }
 }
 
 
