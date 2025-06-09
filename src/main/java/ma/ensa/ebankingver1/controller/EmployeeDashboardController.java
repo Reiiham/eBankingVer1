@@ -16,10 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/employee")
@@ -348,6 +345,40 @@ public class EmployeeDashboardController {
 
         return ResponseEntity.ok("Retrait effectué avec succès");
     }
+
+    /**
+     * Endpoint pour ajouter un nouveau compte bancaire à un client existant
+     * Exemple d'entrée: {
+     *   "clientId": 2,
+     *   "type": "epargne",
+     *   "balance": 1000.0
+     * }
+     */
+    @PostMapping("/add-account")
+    public ResponseEntity<?> addBankAccount(@RequestBody AddAccountRequest request) {
+        try {
+            BankAccount newAccount = service.addBankAccount(request);
+
+            // Créer une réponse avec les informations du compte créé
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "message", "Compte bancaire créé avec succès",
+                    "accountId", newAccount.getId(),
+                    "accountNumber", newAccount.getRawAccountNumber(),
+                    "rib", newAccount.getRib(),
+                    "type", newAccount.getType(),
+                    "balance", newAccount.getBalance(),
+                    "transactionPIN", newAccount.getTransactionPIN()
+            ));
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Erreur lors de la création du compte", "message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Erreur interne du serveur", "message", "Une erreur inattendue s'est produite"));
+        }
+    }
+
 }
 
 
