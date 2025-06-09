@@ -3,8 +3,7 @@ package ma.ensa.ebankingver1.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import jakarta.persistence.*;
 
@@ -17,9 +16,12 @@ public class BankAccount {
     private String id;
 
     @PrePersist
-    public void generateId() {
+    public void generateIdAndPIN() {
         if (this.id == null) {
-            this.id = java.util.UUID.randomUUID().toString();
+            this.id = UUID.randomUUID().toString();
+        }
+        if (this.transactionPIN == null) {
+            this.transactionPIN = generateFourDigitPIN();
         }
     }
 
@@ -44,6 +46,14 @@ public class BankAccount {
 
     @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
     private List<Transaction> transactions;
+
+    @Column(name = "transaction_pin")
+    private String transactionPIN;
+
+    private String generateFourDigitPIN() {
+        int pin = new Random().nextInt(9000) + 1000; // 1000 to 9999
+        return String.valueOf(pin);
+    }
 
     // getters and setters
     public String getId() {
@@ -87,9 +97,9 @@ public class BankAccount {
     public String getRib() {
         return rib;
     }
-
     public void setRib(String rib) {
         this.rib = rib;
     }
-
+    public String getTransactionPIN() { return transactionPIN; }
+    public void setTransactionPIN(String transactionPIN) { this.transactionPIN = transactionPIN; }
 }

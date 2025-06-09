@@ -116,6 +116,8 @@ public class EnrollmentService {
         account.setBalance(dto.getBalance());
         account.setUser(client);
 
+        System.out.println("Transaction PIN: " + account.getTransactionPIN());
+
         accountRepository.save(account);
 
         // Envoi de l'email avec les identifiants
