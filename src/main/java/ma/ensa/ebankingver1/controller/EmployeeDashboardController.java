@@ -354,7 +354,7 @@ public class EmployeeDashboardController {
      *   "balance": 1000.0
      * }
      */
-    @PostMapping("/add-account")
+    @PostMapping("/clients/add-account")
     public ResponseEntity<?> addBankAccount(@RequestBody AddAccountRequest request) {
         try {
             BankAccount newAccount = service.addBankAccount(request);
