@@ -10,6 +10,7 @@ public interface AccountRepository extends JpaRepository<BankAccount, String> {
     Optional<BankAccount> findByUserId(Long userId);
 
     void deleteByUserId(Long userId);
+    Optional<BankAccount> findByRib(String rib);
 
 //    @Query("SELECT a FROM BankAccount a WHERE LOWER(a.rawAccountNumber) LIKE LOWER(CONCAT('%', :query, '%'))")
 //    List<BankAccount> findByRawAccountNumberLike(@Param("query") String query);

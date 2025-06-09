@@ -143,7 +143,7 @@ public class EnrollmentService {
     public void sendEmail(String to, String subject, String content) {
         try {
             final MailtrapMail mail = MailtrapMail.builder()
-                    .from(new Address("hello@demomailtrap.com", "Équipe Bancaire"))
+                    .from(new Address("hello@demomailtrap.co", "Équipe Bancaire"))
                     .to(List.of(new Address(to)))
                     .subject(subject)
                     .text(content)

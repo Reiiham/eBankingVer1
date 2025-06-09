@@ -1,41 +1,35 @@
 package ma.ensa.ebankingver1.ai;
 
+import java.util.Map;
 
-//siham
 public class AIResponse {
-    private String responseText;
+    private String intent;
+    private String message;
     private boolean success;
-    private String intent; // ADD THIS FIELD
+    private Map<String, String> parameters;
 
-    // ADD NEW CONSTRUCTOR
-    public AIResponse(String responseText, boolean success, String intent) {
-        this.responseText = responseText;
-        this.success = success;
+    public AIResponse(String intent, String message, boolean success, Map<String, String> parameters) {
         this.intent = intent;
+        this.message = message;
+        this.success = success;
+        this.parameters = parameters;
     }
-    public String getResponseText() {
-        return responseText;
+
+    public String getIntent() {
+        return intent;
     }
-    public void setResponseText(String responseText) {
-        this.responseText = responseText;
+
+    public String getMessage() {
+        return message;
     }
+
     public boolean isSuccess() {
         return success;
     }
-    public void setSuccess(boolean success) {
-        this.success = success;
+
+    public Map<String, String> getParameters() {
+        return parameters;
     }
-
-
-    // ADD GETTER AND SETTER
-    public String getIntent() { return intent; }
-    public void setIntent(String intent) { this.intent = intent; }
-    public AIResponse(String responseText, boolean success) {
-        this.responseText = responseText;
-        this.success = success;
-        this.intent = null; // Initialize intent to null
-    }
-
 }
 /*
 public class AIResponse {

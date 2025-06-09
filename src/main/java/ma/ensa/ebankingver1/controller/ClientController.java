@@ -6,30 +6,28 @@ import ma.ensa.ebankingver1.DTO.BeneficiaryResponseDTO;
 import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.DTO.TransferRequest;
 import ma.ensa.ebankingver1.DTO.TransferResponse;
+import ma.ensa.ebankingver1.ai.AIAssistantService;
 import ma.ensa.ebankingver1.model.*;
-import ma.ensa.ebankingver1.service.BeneficiaryService;
-import ma.ensa.ebankingver1.service.UserService;
+import ma.ensa.ebankingver1.service.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ma.ensa.ebankingver1.ai.AIResponse;
+import ma.ensa.ebankingver1.ai.WitAIClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import ma.ensa.ebankingver1.service.BankAccountService;
-import ma.ensa.ebankingver1.service.TransactionService;
 @RestController
 @RequestMapping("/api/clients")
 public class ClientController {
+    private static final Logger logger = LoggerFactory.getLogger(ClientController.class);
 
     @Autowired
     private BankAccountService bankAccountService;
@@ -38,6 +36,10 @@ public class ClientController {
 
     @Autowired
     private TransactionService transactionService;
+    @Autowired
+    private AIAssistantService aiAssistantService;
+    @Autowired
+    private AuditService auditService;
 
     @Autowired
     private UserService userService;
@@ -473,6 +475,65 @@ public class ClientController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Erreur lors de la récupération des types de relation"));
         }
+    }
+    @PostMapping("/{clientId}/assistant")
+    public ResponseEntity<?> interactWithAssistant(
+            @PathVariable("clientId") Long clientId,
+            @Valid @RequestBody Map<String, String> requestBody,
+            @RequestParam(name = "language", defaultValue = "fr") String language,
+            Authentication authentication) {
+        try {
+            logger.info("Processing AI assistant request for clientId: {}, language: {}", clientId, language);
+
+            User currentUser = userService.findByUsername(authentication.getName());
+            if (!currentUser.getId().equals(clientId)) {
+                auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+                        Map.of("error", "Unauthorized access"), false);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Accès non autorisé"));
+            }
+
+            if (!currentUser.getServicesActifs().contains("ASSISTANT")) {
+                auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+                        Map.of("error", "ASSISTANT service not activated"), false);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "Service ASSISTANT non activé pour ce client."));
+            }
+
+            String requestText = requestBody.get("request");
+            if (requestText == null || requestText.trim().isEmpty()) {
+                auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+                        Map.of("error", "Empty request"), false);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "La requête ne peut pas être vide"));
+            }
+
+            AIResponse aiResponse = aiAssistantService.processRequest(requestText, language, currentUser);
+
+            auditService.logAction("ASSISTANT_REQUEST_SUCCESS", "USER", clientId.toString(),
+                    Map.of("request", requestText, "response", aiResponse.getMessage(), "language", language), true);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", aiResponse.isSuccess(),
+                    "response", aiResponse.getMessage(),
+                    "intent", aiResponse.getIntent(),
+                    "language", language
+            ));
+
+        } catch (Exception e) {
+            logger.error("Error in assistant endpoint for clientId: {}, error: {}", clientId, e.getMessage());
+            auditService.logAction("ASSISTANT_REQUEST_FAILED", "USER", clientId.toString(),
+                    Map.of("error", e.getMessage()), false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Erreur serveur: " + e.getMessage()));
+        }
+    }
+    @GetMapping("/assistant/health")
+    public ResponseEntity<Map<String, Boolean>> checkAssistantHealth(@Autowired WitAIClient witAIClient) {
+        boolean isModelAvailable = witAIClient.testModelAvailability();
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("modelAvailable", isModelAvailable);
+        return ResponseEntity.ok(response);
     }
 }
 
