@@ -1,11 +1,8 @@
 package ma.ensa.ebankingver1.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ma.ensa.ebankingver1.ai.LibreTranslateClient;
 import ma.ensa.ebankingver1.ai.MyMemoryTranslateClient;
 import ma.ensa.ebankingver1.aspect.AuditAspect;
-import ma.ensa.ebankingver1.filter.JwtFilter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

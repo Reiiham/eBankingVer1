@@ -11,6 +11,7 @@ public interface BankAccountService {
     BankAccount findByRib(String rib);
     BankAccount save(BankAccount account);
     List<BankAccount> findByUserId(Long userId);
+    List<BankAccount> findAll();
 
     /*
     ClientDTO saveClient(ClientDTO clientDTO);

@@ -47,6 +47,10 @@ public class BankAccountServiceImpl implements BankAccountService {
     public List<BankAccount> findByUserId(Long userId) {
         return bankAccountRepository.findByUserId(userId);
     }
+    @Override
+    public List<BankAccount> findAll() {
+        return bankAccountRepository.findAll();
+    }
     /*
     @Autowired
     private UserRepository clientRepository;

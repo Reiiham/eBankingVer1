@@ -4,13 +4,9 @@ import jakarta.validation.Valid;
 import ma.ensa.ebankingver1.DTO.EmployeeDTO;
 import ma.ensa.ebankingver1.DTO.ExchangeRateUpdateRequest;
 import ma.ensa.ebankingver1.DTO.SettingUpdateRequest;
-import ma.ensa.ebankingver1.model.Currency;
-import ma.ensa.ebankingver1.model.GlobalSetting;
-import ma.ensa.ebankingver1.model.User;
-import ma.ensa.ebankingver1.service.AuditService;
-import ma.ensa.ebankingver1.service.CurrencyService;
-import ma.ensa.ebankingver1.service.EmployeeService;
-import ma.ensa.ebankingver1.service.SettingService;
+import ma.ensa.ebankingver1.DTO.TransferRequest;
+import ma.ensa.ebankingver1.model.*;
+import ma.ensa.ebankingver1.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +34,10 @@ public class AdminController {
     private EmployeeService employeeService;
     @Autowired
     private AuditService auditService;
+    @Autowired
+    private BankAccountService bankAccountService;
+    @Autowired
+    private TransactionService transactionService;
 
 
     @GetMapping("/currencies")
@@ -152,6 +153,149 @@ public class AdminController {
         }
     }
 
+    @PostMapping("/funds")
+    public ResponseEntity<Map<String, Object>> transferFunds(@RequestBody TransferRequest request) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Find accounts by RIB
+            BankAccount from = bankAccountService.findByRib(request.getFromRib());
+            BankAccount to = bankAccountService.findByRib(request.getToRib());
+
+            // Validation
+            if (from == null) {
+                response.put("success", false);
+                response.put("message", "Compte source introuvable avec RIB: " + request.getFromRib());
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (to == null) {
+                response.put("success", false);
+                response.put("message", "Compte destinataire introuvable avec RIB: " + request.getToRib());
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (from.getRib().equals(to.getRib())) {
+                response.put("success", false);
+                response.put("message", "Les comptes source et destinataire ne peuvent pas être identiques");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (from.getBalance() < request.getAmount()) {
+                response.put("success", false);
+                response.put("message", "Solde insuffisant. Solde actuel: " + from.getBalance() + "€");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            if (request.getAmount() <= 0) {
+                response.put("success", false);
+                response.put("message", "Le montant doit être positif");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Perform transfer
+            performTransfer(from, to, request.getAmount());
+
+            // Success response
+            response.put("success", true);
+            response.put("message", "Virement effectué avec succès");
+            response.put("fromAccount", from.getRib());
+            response.put("toAccount", to.getRib());
+            response.put("amount", request.getAmount());
+            response.put("newBalance", from.getBalance());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Erreur lors du virement: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/account/{rib}")
+    public ResponseEntity<Map<String, Object>> getAccountByRib(@PathVariable String rib) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            BankAccount account = bankAccountService.findByRib(rib);
+
+            if (account == null) {
+                response.put("found", false);
+                response.put("message", "Compte introuvable");
+                return ResponseEntity.ok(response);
+            }
+
+            response.put("found", true);
+            response.put("accountNumber", account.getRawAccountNumber());
+            response.put("balance", account.getBalance());
+            response.put("type", account.getType());
+            response.put("ownerName", account.getUser().getFirstName() + " " + account.getUser().getLastName());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("found", false);
+            response.put("message", "Erreur lors de la recherche: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/accounts")
+    public ResponseEntity<List<Map<String, Object>>> getAllAccounts() {
+        try {
+            List<BankAccount> accounts = bankAccountService.findAll();
+            List<Map<String, Object>> accountList = new ArrayList<>();
+
+            for (BankAccount account : accounts) {
+                Map<String, Object> accountInfo = new HashMap<>();
+                accountInfo.put("rib", account.getRib());
+                accountInfo.put("accountNumber", account.getRawAccountNumber());
+                accountInfo.put("balance", account.getBalance());
+                accountInfo.put("type", account.getType());
+                accountInfo.put("ownerName", account.getUser().getFirstName() + " " + account.getUser().getLastName());
+                accountList.add(accountInfo);
+            }
+
+            return ResponseEntity.ok(accountList);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
+        }
+    }
+
+    private void performTransfer(BankAccount from, BankAccount to, double amount) {
+        // Update balances
+        from.setBalance(from.getBalance() - amount);
+        to.setBalance(to.getBalance() + amount);
+
+        bankAccountService.save(from);
+        bankAccountService.save(to);
+
+        // Create debit transaction
+        Transaction debit = new Transaction();
+        debit.setId(java.util.UUID.randomUUID().toString() + "_DEBIT");
+        debit.setAmount(-amount);
+        debit.setType("VIREMENT_SORTANT");
+        debit.setDate(java.time.LocalDateTime.now());
+        debit.setAccount(from);
+        debit.setUser(from.getUser());
+
+        // Create credit transaction
+        Transaction credit = new Transaction();
+        credit.setId(java.util.UUID.randomUUID().toString() + "_CREDIT");
+        credit.setAmount(amount);
+        credit.setType("VIREMENT_ENTRANT");
+        credit.setDate(java.time.LocalDateTime.now());
+        credit.setAccount(to);
+        credit.setUser(to.getUser());
+
+        transactionService.save(debit);
+        transactionService.save(credit);
+    }
+    }
+
+
     /*
 
     @Autowired
@@ -247,4 +391,3 @@ public Map<String, Object> getDashboardStats() {
 }
 */
 
-}

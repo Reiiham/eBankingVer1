@@ -7,6 +7,8 @@ public class TransferRequest {
     private double amount;
     private String description;
     private String beneficiaryName;
+    private String fromRib;
+
 
     // Getters et setters
     public String getFromAccountId() { return fromAccountId; }
@@ -25,5 +27,12 @@ public class TransferRequest {
 
     public void setBeneficiaryId(Long beneficiaryId) {
         this.beneficiaryId = beneficiaryId;
+    }
+    public String getFromRib() {
+        return fromRib;
+    }
+
+    public void setFromRib(String fromRib) {
+        this.fromRib = fromRib;
     }
 }

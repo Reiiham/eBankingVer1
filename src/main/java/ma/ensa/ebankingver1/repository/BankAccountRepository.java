@@ -14,6 +14,7 @@ public interface BankAccountRepository extends JpaRepository<BankAccount, String
     List<BankAccount> findByUser(User user);
     BankAccount findByRib(String rib);
     List<BankAccount> findByUserId(Long userId);
+    List<BankAccount> findAll();
     @Query("SELECT ba FROM BankAccount ba WHERE ba.user.id = :userId AND ba.type = :type")
     List<BankAccount> findByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
 
