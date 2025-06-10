@@ -41,6 +41,17 @@ public class BankAccount {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private String transactionPin;
+
+    public String getTransactionPin() {
+        return transactionPin;
+    }
+
+    public void setTransactionPin(String transactionPin) {
+        this.transactionPin = transactionPin;
+    }
+
+
     @OneToMany(mappedBy = "account", fetch = FetchType.EAGER)
     private List<Transaction> transactions;
 
