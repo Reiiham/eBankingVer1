@@ -12,6 +12,9 @@ public interface BankAccountService {
     BankAccount save(BankAccount account);
     List<BankAccount> findByUserId(Long userId);
     List<BankAccount> findAll();
+    String generateQRPaymentCode(QRPaymentRequest request);
+    void processQRPayment(QRPaymentRequest request, Long userId);
+    BankAccount testFindById(String id);
 
     /*
     ClientDTO saveClient(ClientDTO clientDTO);

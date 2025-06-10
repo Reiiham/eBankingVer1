@@ -103,6 +103,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/validate-token/**").permitAll()
                         .requestMatchers("/api/auth/set-password").permitAll()
                         .requestMatchers("/api/auth/resend-activation").permitAll()
+                        .requestMatchers("/api/v1/qr-payments/**").hasRole("CLIENT")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

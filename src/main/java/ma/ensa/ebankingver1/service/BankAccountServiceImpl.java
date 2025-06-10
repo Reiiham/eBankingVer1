@@ -1,5 +1,9 @@
 package ma.ensa.ebankingver1.service;
-
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import ma.ensa.ebankingver1.DTO.*;
@@ -8,6 +12,7 @@ import ma.ensa.ebankingver1.model.*;
 //import ma.ensa.ebankingver1.repository.BankAccountRepository;
 import ma.ensa.ebankingver1.repository.BankAccountRepository;
 import ma.ensa.ebankingver1.repository.BeneficiaryRepository;
+import ma.ensa.ebankingver1.repository.TransactionRepository;
 import ma.ensa.ebankingver1.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,19 +20,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class BankAccountServiceImpl implements BankAccountService {
-
+    private static final Logger logger = LoggerFactory.getLogger(BankAccountServiceImpl.class);
     @Autowired
     private BankAccountRepository bankAccountRepository;
 
+    @Autowired
+    private BeneficiaryRepository beneficiaryRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private AuditService auditService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
     @Override
     public BankAccount findById(String id) {
         return bankAccountRepository.findById(id).orElse(null);
@@ -51,6 +65,199 @@ public class BankAccountServiceImpl implements BankAccountService {
     public List<BankAccount> findAll() {
         return bankAccountRepository.findAll();
     }
+    private String toHex(String input) {
+        if (input == null) return "null";
+        StringBuilder hex = new StringBuilder();
+        for (char c : input.toCharArray()) {
+            hex.append(String.format("%02X", (int) c));
+        }
+        return hex.toString();
+    }
+    @Override
+    public String generateQRPaymentCode(QRPaymentRequest request) {
+        logger.info("Generating QR code for payment: RIB='{}', Amount={}", request.getRib(), request.getAmount());
+        try {
+            if (request.getRib() == null || request.getRib().isBlank()) {
+                throw new IllegalArgumentException("RIB cannot be null or blank");
+            }
+            BankAccount destinationAccount = bankAccountRepository.findByRib(request.getRib());
+            if (destinationAccount == null) {
+                throw new EntityNotFoundException("No account found for RIB: " + request.getRib());
+            }
+            Map<String, Object> qrData = new HashMap<>();
+            qrData.put("rib", request.getRib());
+            qrData.put("amount", request.getAmount());
+            qrData.put("description", request.getDescription());
+            String qrContent = objectMapper.writeValueAsString(qrData);
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+            byte[] pngData = pngOutputStream.toByteArray();
+            String base64Image = Base64.getEncoder().encodeToString(pngData);
+            Map<String, Object> auditDetails = new HashMap<>();
+            auditDetails.put("rib", request.getRib());
+            auditDetails.put("amount", String.valueOf(request.getAmount()));
+            auditService.logAction("GENERATE_QR_PAYMENT", "QR_CODE", request.getRib(), auditDetails, true);
+            return "data:image/png;base64," + base64Image;
+        } catch (Exception e) {
+            logger.error("Error generating QR code for RIB '{}': {}", request.getRib(), e.getMessage(), e);
+            Map<String, Object> auditDetails = new HashMap<>();
+            auditDetails.put("rib", request.getRib());
+            auditDetails.put("error", e.getMessage());
+            auditService.logAction("GENERATE_QR_PAYMENT", "QR_CODE", request.getRib(), auditDetails, false);
+            throw new RuntimeException("Failed to generate QR code", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void processQRPayment(QRPaymentRequest request, Long userId) {
+        logger.info("Processing QR payment: SourceAccountId='{}', RIB='{}', Amount={}",
+                request.getSourceAccountId(), request.getRib(), request.getAmount());
+        try {
+            if (request.getSourceAccountId() == null || request.getSourceAccountId().isBlank()) {
+                throw new IllegalArgumentException("Invalid source account ID");
+            }
+            if (request.getRib() == null || request.getRib().isBlank()) {
+                throw new IllegalArgumentException("Invalid RIB");
+            }
+            if (request.getAmount() <= 0) {
+                throw new IllegalArgumentException("Invalid amount");
+            }
+            String sourceAccountId = request.getSourceAccountId().trim().toUpperCase();
+            logger.debug("Normalized SourceAccountId: ID='{}', Length={}, Hex='{}'",
+                    sourceAccountId, sourceAccountId.length(), toHex(sourceAccountId));
+            BankAccount sourceAccount = bankAccountRepository.findById(sourceAccountId)
+                    .orElseThrow(() -> {
+                        logger.error("No source account found in database for ID: '{}'", sourceAccountId);
+                        return new EntityNotFoundException("Invalid source account: " + sourceAccountId);
+                    });
+            logger.debug("Found source account: ID='{}', UserId='{}'",
+                    sourceAccount.getId(), sourceAccount.getUser().getId());
+            if (!sourceAccount.getUser().getId().equals(userId)) {
+                logger.error("Source account '{}' does not belong to user: userId={}, accountUserId={}",
+                        sourceAccountId, userId, sourceAccount.getUser().getId());
+                throw new IllegalStateException("Invalid source account for user");
+            }
+            transfer(sourceAccountId, request.getRib(), request.getAmount());
+            Map<String, Object> auditDetails = new HashMap<>();
+            auditDetails.put("sourceAccountId", sourceAccountId);
+            auditDetails.put("rib", request.getRib());
+            auditDetails.put("amount", String.valueOf(request.getAmount()));
+            auditDetails.put("userId", String.valueOf(userId));
+            auditService.logAction("PROCESS_QR_PAYMENT", "TRANSACTION", request.getRib(), auditDetails, true);
+        } catch (Exception e) {
+            logger.error("Transfer failed for SourceAccountId='{}', RIB='{}': {}",
+                    request.getSourceAccountId(), request.getRib(), e.getMessage());
+            Map<String, Object> auditDetails = new HashMap<>();
+            auditDetails.put("sourceAccountId", request.getSourceAccountId());
+            auditDetails.put("rib", request.getRib());
+            auditDetails.put("error", e.getMessage());
+            auditDetails.put("userId", String.valueOf(userId));
+            auditService.logAction("PROCESS_QR_PAYMENT", "TRANSACTION", request.getRib(), auditDetails, false);
+            throw new RuntimeException("Failed to process QR payment: " + e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public void transfer(String sourceAccountId, String destinationRib, double amount) {
+        logger.info("Starting transfer from: '{}' to RIB: '{}', amount: {}",
+                sourceAccountId, destinationRib, amount);
+        try {
+            if (amount <= 0) {
+                logger.warn("Transfer rejected: invalid amount '{}'", amount);
+                throw new IllegalArgumentException("Invalid amount");
+            }
+            BankAccount sourceAccount = bankAccountRepository.findById(sourceAccountId)
+                    .orElseThrow(() -> {
+                        logger.error("No source account found: '{}'", sourceAccountId);
+                        return new EntityNotFoundException("Source account not found: " + sourceAccountId);
+                    });
+            BankAccount destinationAccount = bankAccountRepository.findByRib(destinationRib);
+            if (destinationAccount == null) {
+                logger.debug("No direct account found for RIB: '{}', checking beneficiary", destinationRib);
+                Optional<Beneficiary> beneficiaryOpt = beneficiaryRepository.findByRib(destinationRib);
+                if (beneficiaryOpt.isPresent()) {
+                    destinationAccount = beneficiaryOpt.get().getAccount();
+                    if (destinationAccount == null) {
+                        logger.error("No destination account linked to beneficiary for RIB: '{}'", destinationRib);
+                        throw new EntityNotFoundException("No destination account found for RIB: " + destinationRib);
+                    }
+                    logger.debug("Found destination via beneficiary: ID '{}'", destinationAccount.getId());
+                } else {
+                    logger.error("No account or beneficiary found for RIB: '{}'", destinationRib);
+                    throw new EntityNotFoundException("No account or beneficiary found for RIB: " + destinationRib);
+                }
+            }
+            if (sourceAccount.getBalance() < amount) {
+                logger.warn("Transfer rejected: insufficient balance in source '{}', balance: '{}'",
+                        sourceAccountId, sourceAccount.getBalance());
+                throw new RuntimeException("Insufficient balance in source account");
+            }
+            double newSourceBalance = sourceAccount.getBalance() - amount;
+            double newDestinationBalance = destinationAccount.getBalance() + amount;
+            sourceAccount.setBalance(newSourceBalance);
+            destinationAccount.setBalance(newDestinationBalance);
+
+            // Créer transaction débit
+            Transaction debitTransaction = new Transaction();
+            debitTransaction.setId(UUID.randomUUID().toString() + "_DEBIT");
+            debitTransaction.setAccount(sourceAccount);
+            debitTransaction.setAmount(-amount);
+            debitTransaction.setType("VIREMENT_SORTANT");
+            debitTransaction.setDate(LocalDateTime.now());
+            debitTransaction.setUser(sourceAccount.getUser());
+            debitTransaction.setCategory("QR_PAYMENT");
+
+            // Créer transaction crédit
+            Transaction creditTransaction = new Transaction();
+            creditTransaction.setId(UUID.randomUUID().toString() + "_CREDIT");
+            creditTransaction.setAccount(destinationAccount);
+            creditTransaction.setAmount(amount);
+            creditTransaction.setType("VIREMENT_ENTRANT");
+            creditTransaction.setDate(LocalDateTime.now());
+            creditTransaction.setUser(destinationAccount.getUser());
+            creditTransaction.setCategory("QR_PAYMENT");
+
+            // Sauvegarder les transactions
+            transactionRepository.save(debitTransaction);
+            transactionRepository.save(creditTransaction);
+
+            // Ajouter à la liste des transactions du compte
+            sourceAccount.getTransactions().add(debitTransaction);
+            destinationAccount.getTransactions().add(creditTransaction);
+
+            // Sauvegarder les comptes
+            bankAccountRepository.save(sourceAccount);
+            bankAccountRepository.save(destinationAccount);
+
+            logger.info("Transfer completed: from '{}' (new balance: {}) to RIB '{}' (new balance: {})",
+                    sourceAccountId, newSourceBalance, destinationRib, newDestinationBalance);
+            Map<String, Object> auditDetails = new HashMap<>();
+            auditDetails.put("sourceAccountId", sourceAccountId);
+            auditDetails.put("destinationRib", destinationRib);
+            auditDetails.put("amount", String.valueOf(amount));
+            auditService.logAction("TRANSFER", "TRANSACTION", destinationRib, auditDetails, true);
+        } catch (Exception e) {
+            logger.error("Transfer failed for source '{}', destination RIB '{}': {}",
+                    sourceAccountId, destinationRib, e.getMessage());
+            Map<String, Object> auditDetails = new HashMap<>();
+            auditDetails.put("sourceAccountId", sourceAccountId);
+            auditDetails.put("destinationRib", destinationRib);
+            auditDetails.put("error", e.getMessage());
+            auditService.logAction("TRANSFER", "TRANSACTION", destinationRib, auditDetails, false);
+            throw new RuntimeException("Transfer failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public BankAccount testFindById(String id) {
+        logger.info("Testing findById for ID: '{}', Hex: {}", id, toHex(id));
+        return bankAccountRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Test failed: account not found: " + id));
+    }
+
     /*
     @Autowired
     private UserRepository clientRepository;

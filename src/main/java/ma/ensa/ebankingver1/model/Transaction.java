@@ -10,6 +10,8 @@ public class Transaction {
     private String type; // deposit, withdraw, transfer, etc.
     private double amount;
     private LocalDateTime date;
+    private String category; // New field for category (e.g., Food, Transport)
+    private String qrCodeData; // Nouveau champ pour QR code
 
     @ManyToOne
     @JoinColumn(name = "account_id")
@@ -56,5 +58,19 @@ public class Transaction {
     }
     public User getUser() {
         return user;
+    }
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+    public String getQrCodeData() {
+        return qrCodeData;
+    }
+
+    public void setQrCodeData(String qrCodeData) {
+        this.qrCodeData = qrCodeData;
     }
 }
