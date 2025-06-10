@@ -24,6 +24,9 @@ import java.util.Properties;
 @PropertySource("classpath:database.properties")
 public class DataConfig {
 
+    @Autowired
+    private Environment environment;
+
     private final String PROPERTY_DRIVER = "driver";
     private final String PROPERTY_URL = "url";
     private final String PROPERTY_USERNAME = "user";
@@ -36,8 +39,7 @@ public class DataConfig {
     private final String PROPERTY_CACHE_SECOND_LEVEL = "hibernate.cache.use_second_level_cache";
     private final String PROPERTY_CACHE_QUERY = "hibernate.cache.use_query_cache";
     private final String PROPERTY_ID_GENERATOR = "hibernate.id.new_generator_mappings";
-    @Autowired
-    Environment environment;
+
 
     @Bean
     LocalContainerEntityManagerFactoryBean entityManagerFactory() {

@@ -2,7 +2,9 @@ package ma.ensa.ebankingver1.service;
 
 import ma.ensa.ebankingver1.DTO.*;
 import ma.ensa.ebankingver1.model.BankAccount;
+import ma.ensa.ebankingver1.model.User;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface BankAccountService {
@@ -15,6 +17,14 @@ public interface BankAccountService {
     String generateQRPaymentCode(QRPaymentRequest request);
     void processQRPayment(QRPaymentRequest request, Long userId);
     BankAccount testFindById(String id);
+
+    // Add these new methods for crypto trading
+    boolean debitUser(User user, double amount, String reason);
+    boolean creditUser(User user, double amount, String reason);
+    BigDecimal getAccountBalanceByRib(String rib);
+    boolean validateTransactionPinByRib(String rib, String transactionPin);
+    void debitAccountByRib(String rib, BigDecimal amount, String description);
+    void creditAccountByRib(String rib, BigDecimal amount, String description);
 
     /*
     ClientDTO saveClient(ClientDTO clientDTO);
