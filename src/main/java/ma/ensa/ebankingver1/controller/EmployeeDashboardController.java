@@ -367,7 +367,7 @@ public class EmployeeDashboardController {
                     "rib", newAccount.getRib(),
                     "type", newAccount.getType(),
                     "balance", newAccount.getBalance(),
-                    "transactionPIN", newAccount.getTransactionPIN()
+                    "transactionPIN", newAccount.getTransactionPin()
             ));
 
         } catch (RuntimeException e) {

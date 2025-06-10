@@ -110,7 +110,7 @@ public class EnrollmentService {
         account.setBalance(dto.getBalance());
         account.setUser(client);
 
-        System.out.println("Transaction PIN: " + account.getTransactionPIN());
+        System.out.println("Transaction PIN: " + account.getTransactionPin());
 
         accountRepository.save(account);
 
@@ -179,7 +179,7 @@ public class EnrollmentService {
         BankAccount savedAccount = accountRepository.save(newAccount);
 
         System.out.println("Nouveau compte créé pour le client " + client.getFirstName() + " " + client.getLastName()
-                + " → Numéro: " + rawAccNum + ", PIN: " + newAccount.getTransactionPIN());
+                + " → Numéro: " + rawAccNum + ", PIN: " + newAccount.getTransactionPin());
 
         return savedAccount;
     }
