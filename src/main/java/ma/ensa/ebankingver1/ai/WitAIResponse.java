@@ -48,11 +48,31 @@ public class WitAIResponse {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private static class Entity {
+    public static class Entity { // Déjà public static, c'est correct
         @JsonProperty("value")
-        Object value;
+        private Object value;
 
         @JsonProperty("body")
-        String body;
+        private String body;
+
+        // Ajout du getter getValue()
+        public Object getValue() {
+            return value;
+        }
+
+        // Ajout du setter setValue() pour complétude
+        public void setValue(Object value) {
+            this.value = value;
+        }
+
+        // Getter pour body (facultatif mais cohérent)
+        public String getBody() {
+            return body;
+        }
+
+        // Setter pour body (facultatif mais cohérent)
+        public void setBody(String body) {
+            this.body = body;
+        }
     }
 }

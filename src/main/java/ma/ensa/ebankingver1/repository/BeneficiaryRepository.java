@@ -16,7 +16,7 @@ public interface BeneficiaryRepository extends JpaRepository<Beneficiary, Long> 
     List<Beneficiary> findByUserId(Long userId);
     boolean existsByUserIdAndRib(Long userId, String rib);
     Optional<Beneficiary> findByIdAndUserId(Long id, Long userId);
-
+    Optional<Beneficiary> findByRib(String rib);
     @Query("SELECT b FROM Beneficiary b WHERE b.user.id = :userId AND b.actif = true AND " +
             "(LOWER(b.nom) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(b.prenom) LIKE LOWER(CONCAT('%', :query, '%')) OR " +

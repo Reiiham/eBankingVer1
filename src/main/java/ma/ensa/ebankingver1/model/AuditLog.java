@@ -22,7 +22,6 @@ public class AuditLog {
 
     @Column(name = "entity_type")
     private String entityType;
-
     private String details;
     private LocalDateTime timestamp;
     private boolean success;

@@ -3,9 +3,12 @@ package ma.ensa.ebankingver1.DTO;
 public class TransferRequest {
     private String fromAccountId;
     private String toRib;
+    private Long beneficiaryId;
     private double amount;
     private String description;
     private String beneficiaryName;
+    private String fromRib;
+
 
     // Getters et setters
     public String getFromAccountId() { return fromAccountId; }
@@ -18,4 +21,18 @@ public class TransferRequest {
     public void setDescription(String description) { this.description = description; }
     public String getBeneficiaryName() { return beneficiaryName; }
     public void setBeneficiaryName(String beneficiaryName) { this.beneficiaryName = beneficiaryName; }
+    public Long getBeneficiaryId() {
+        return beneficiaryId;
+    }
+
+    public void setBeneficiaryId(Long beneficiaryId) {
+        this.beneficiaryId = beneficiaryId;
+    }
+    public String getFromRib() {
+        return fromRib;
+    }
+
+    public void setFromRib(String fromRib) {
+        this.fromRib = fromRib;
+    }
 }

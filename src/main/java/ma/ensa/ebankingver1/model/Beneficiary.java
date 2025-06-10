@@ -35,6 +35,10 @@ public class Beneficiary {
     private Boolean actif = true;
 
     @ManyToOne
+    @JoinColumn(name = "account_id")
+    private BankAccount account;
+
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -85,7 +89,8 @@ public class Beneficiary {
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-
+    public BankAccount getAccount() { return account; }
+    public void setAccount(BankAccount account) { this.account = account; }
     // Méthode utilitaire pour obtenir le nom complet
     public String getNomComplet() {
         if (prenom != null && !prenom.trim().isEmpty()) {
