@@ -41,8 +41,6 @@ public class BankAccount {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String transactionPin;
-
     public String getTransactionPin() {
         return transactionPin;
     }
@@ -108,6 +106,4 @@ public class BankAccount {
     public void setRib(String rib) {
         this.rib = rib;
     }
-    public String getTransactionPin() { return transactionPin; }
-    public void setTransactionPin(String transactionPin) { this.transactionPin = transactionPin; }
 }

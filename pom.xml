@@ -20,16 +20,27 @@
     </properties>
 
     <dependencies>
-        <!--  https://mvnrepository.com/artifact/org.springframework.data/spring-data-elasticsearch  -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
-            <version>5.2.0</version>
+            <version>5.4.2</version>
         </dependency>
+
+        <!-- Elasticsearch Java Client -->
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.11.0</version>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+            <version>3.4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+            <version>3.4.4</version>
         </dependency>
         <!-- Nouvelle dépendance pour QR codes -->
         <dependency>
@@ -109,11 +120,7 @@
             <version>${jackson.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa -->
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
-            <version>3.4.4</version>
-        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-core -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
